@@ -381,26 +381,27 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-background p-6">
-      <div className="w-full max-w-xs space-y-4 text-center">
-        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto">
+      <div className="w-full max-w-xs text-center">
+        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto mb-4">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
             <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 mb-6">
           <h1 className="text-base font-semibold">Variable Checker</h1>
           <p className="text-xs text-muted-foreground">Find and fix hardcoded values in your designs</p>
         </div>
         <div className="space-y-2">
-          <select
-            value={scanScope}
-            onChange={(e) => setScanScope(e.target.value as ScanScope)}
-            className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 py-1 text-xs shadow-sm"
-          >
-            <option value="selection">Current Selection</option>
-            <option value="page">Current Page</option>
-            <option value="file">All Pages</option>
-          </select>
+          <Select value={scanScope} onValueChange={(v) => setScanScope(v as ScanScope)}>
+            <SelectTrigger className="h-8 w-full text-xs px-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="selection">Current Selection</SelectItem>
+              <SelectItem value="page">Current Page</SelectItem>
+              <SelectItem value="file">All Pages</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={startScan} className="w-full" size="sm">Run Scan</Button>
         </div>
       </div>
