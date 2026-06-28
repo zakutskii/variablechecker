@@ -247,25 +247,7 @@ export class VariableResolver {
         );
       }
 
-      if (property === "cornerRadius" && "cornerRadius" in node) {
-        return this.bindNumericProperty(node, "cornerRadius", variable, modeId);
-      }
-
-      if (
-        (property === "itemSpacing" || property === "gap") &&
-        "itemSpacing" in node
-      ) {
-        return this.bindNumericProperty(node, "itemSpacing", variable, modeId);
-      }
-
-      if (
-        (property === "paddingTop" || property === "padding") &&
-        "paddingTop" in node
-      ) {
-        return this.bindNumericProperty(node, property, variable, modeId);
-      }
-
-      return false;
+      return this.bindNumericProperty(node, property, variable, modeId);
     } catch (e) {
       console.error(`[DesignChecker] bindVariableToNode unexpected error for ${node.name}:`, e);
       return false;
@@ -356,16 +338,57 @@ export class VariableResolver {
 
   private bindNumericProperty(
     node: SceneNode,
-    _property: string,
-    _variable: Variable,
-    _modeId: string,
+    property: string,
+    variable: Variable,
+    modeId: string,
   ): boolean {
     try {
-      if ("boundVariables" in node) {
-        const boundVars = node.boundVariables as Record<string, { id: string; type: string }>;
-        return !!boundVars;
+      const resolvedValue = variable.valuesByMode[modeId];
+      if (typeof resolvedValue !== "number") {
+        return false;
       }
-      return false;
+
+      const value = resolvedValue;
+
+      try {
+        (node as GeometryMixin).boundVariables = {
+          ...((node as GeometryMixin).boundVariables || {}),
+          [property]: { id: variable.id, type: "VARIABLE_ALIAS" },
+        };
+      } catch {
+        // boundVariables setter unavailable, set value directly
+      }
+
+      switch (property) {
+        case "width":
+        case "height": {
+          if (typeof (node as InstanceNode).resize === "function") {
+            const w = property === "width" ? value : (node as InstanceNode).width;
+            const h = property === "height" ? value : (node as InstanceNode).height;
+            (node as InstanceNode).resize(w, h);
+            return true;
+          }
+          return false;
+        }
+        case "minWidth":
+        case "maxWidth":
+        case "minHeight":
+        case "maxHeight":
+        case "cornerRadius":
+        case "itemSpacing":
+        case "gap":
+        case "paddingTop":
+        case "paddingBottom":
+        case "paddingLeft":
+        case "paddingRight":
+          if (property in node) {
+            (node as Record<string, unknown>)[property] = value;
+            return true;
+          }
+          return false;
+        default:
+          return false;
+      }
     } catch {
       return false;
     }

@@ -1483,16 +1483,7 @@
             "stroke"
           );
         }
-        if (property === "cornerRadius" && "cornerRadius" in node) {
-          return this.bindNumericProperty(node, "cornerRadius", variable, modeId);
-        }
-        if ((property === "itemSpacing" || property === "gap") && "itemSpacing" in node) {
-          return this.bindNumericProperty(node, "itemSpacing", variable, modeId);
-        }
-        if ((property === "paddingTop" || property === "padding") && "paddingTop" in node) {
-          return this.bindNumericProperty(node, property, variable, modeId);
-        }
-        return false;
+        return this.bindNumericProperty(node, property, variable, modeId);
       } catch (e) {
         console.error(`[DesignChecker] bindVariableToNode unexpected error for ${node.name}:`, e);
         return false;
@@ -1559,13 +1550,49 @@
         return false;
       }
     }
-    bindNumericProperty(node, _property, _variable, _modeId) {
+    bindNumericProperty(node, property, variable, modeId) {
       try {
-        if ("boundVariables" in node) {
-          const boundVars = node.boundVariables;
-          return !!boundVars;
+        const resolvedValue = variable.valuesByMode[modeId];
+        if (typeof resolvedValue !== "number") {
+          return false;
         }
-        return false;
+        const value = resolvedValue;
+        try {
+          node.boundVariables = __spreadProps(__spreadValues({}, node.boundVariables || {}), {
+            [property]: { id: variable.id, type: "VARIABLE_ALIAS" }
+          });
+        } catch (e) {
+        }
+        switch (property) {
+          case "width":
+          case "height": {
+            if (typeof node.resize === "function") {
+              const w = property === "width" ? value : node.width;
+              const h = property === "height" ? value : node.height;
+              node.resize(w, h);
+              return true;
+            }
+            return false;
+          }
+          case "minWidth":
+          case "maxWidth":
+          case "minHeight":
+          case "maxHeight":
+          case "cornerRadius":
+          case "itemSpacing":
+          case "gap":
+          case "paddingTop":
+          case "paddingBottom":
+          case "paddingLeft":
+          case "paddingRight":
+            if (property in node) {
+              node[property] = value;
+              return true;
+            }
+            return false;
+          default:
+            return false;
+        }
       } catch (e) {
         return false;
       }
