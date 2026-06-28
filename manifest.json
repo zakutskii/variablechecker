@@ -1,6 +1,6 @@
 {
-  "name": "Design Checker",
-  "id": "design-checker",
+  "name": "Variable Checker",
+  "id": "variable-checker",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/index.html",

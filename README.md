@@ -1,4 +1,4 @@
-# Design Checker
+# Variable Checker
 
 A production-ready Figma plugin that audits and standardizes the usage of Variables and Styles across Figma documents.
 
@@ -71,7 +71,7 @@ The build output will be in the `dist/` directory:
 1. Open Figma Desktop
 2. Go to **Plugins → Development → Import plugin from manifest...**
 3. Select the `manifest.json` file
-4. The plugin will appear in **Plugins → Development → Design Checker**
+4. The plugin will appear in **Plugins → Development → Variable Checker**
 
 ## Usage
 

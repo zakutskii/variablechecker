@@ -54,7 +54,11 @@ const TABS: TabInfo[] = [
 ];
 
 function getTabFindings(findings: Finding[], tab: TabInfo): Finding[] {
-  return findings.filter((f) => tab.categories.includes(f.category));
+  const base = findings.filter((f) => tab.categories.includes(f.category));
+  if (tab.id === "dimension") {
+    return base.filter((f) => f.layerType !== "TEXT");
+  }
+  return base;
 }
 
 interface Option {
@@ -237,9 +241,9 @@ export default function App() {
   if (isScanning) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background p-6">
-        <div className="w-full max-w-xs space-y-5 text-center">
-          <div className="w-8 h-8 rounded bg-primary flex items-center justify-center mx-auto">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
+        <div className="w-full max-w-xs space-y-4 text-center">
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
           </div>
@@ -280,9 +284,8 @@ export default function App() {
           </Tabs>
         </div>
 
-        <ScrollArea className="flex-1">
-          {Object.entries(grouped).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3">
+        {Object.entries(grouped).length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 px-3">
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/50">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
@@ -294,7 +297,8 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className="px-3 pb-3 space-y-3">
+            <ScrollArea className="flex-1">
+              <div className="px-3 pb-3 space-y-3">
               {Object.entries(grouped).map(([layerType, typeFindings]) => (
                 <div key={layerType}>
                   <div className="flex items-center gap-1.5 mb-1.5">
@@ -356,8 +360,8 @@ export default function App() {
                 </div>
               ))}
             </div>
+          </ScrollArea>
           )}
-        </ScrollArea>
 
         <div className="border-t p-3 flex items-center justify-between shrink-0 bg-muted/30">
           <p className="text-[11px] text-muted-foreground">
@@ -377,14 +381,16 @@ export default function App() {
 
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-background p-6">
-      <div className="w-full max-w-xs space-y-5 text-center">
-        <div className="w-8 h-8 rounded bg-primary flex items-center justify-center mx-auto">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
+      <div className="w-full max-w-xs space-y-4 text-center">
+        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
             <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         </div>
-        <h1 className="text-base font-semibold">Design Checker</h1>
-        <p className="text-xs text-muted-foreground">Scan your design for hardcoded values</p>
+        <div className="space-y-1">
+          <h1 className="text-base font-semibold">Variable Checker</h1>
+          <p className="text-xs text-muted-foreground">Find and fix hardcoded values in your designs</p>
+        </div>
         <div className="space-y-2">
           <select
             value={scanScope}

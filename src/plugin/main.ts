@@ -36,7 +36,7 @@ function initialize(): void {
 
 figma.on("run", async () => {
   initialize();
-  figma.showUI(__html__, { width: 480, height: 600, title: "Design Checker" });
+  figma.showUI(__html__, { width: 480, height: 600, title: "Variable Checker" });
 });
 
 figma.on("selectionchange", () => {

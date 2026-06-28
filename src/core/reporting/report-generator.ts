@@ -29,7 +29,7 @@ export class ReportGenerator {
 
   generateSummaryText(report: ReportData): string {
     const lines: string[] = [
-      "Design Checker - Audit Report",
+      "Variable Checker - Audit Report",
       "============================",
       "",
       `Generated: ${new Date(report.timestamp).toLocaleString()}`,

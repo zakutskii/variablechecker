@@ -1985,7 +1985,7 @@
     }
     generateSummaryText(report) {
       const lines = [
-        "Design Checker - Audit Report",
+        "Variable Checker - Audit Report",
         "============================",
         "",
         `Generated: ${new Date(report.timestamp).toLocaleString()}`,
@@ -2051,7 +2051,7 @@
   }
   figma.on("run", async () => {
     initialize();
-    figma.showUI(__html__, { width: 480, height: 600, title: "Design Checker" });
+    figma.showUI(__html__, { width: 480, height: 600, title: "Variable Checker" });
   });
   figma.on("selectionchange", () => {
     figma.ui.postMessage({

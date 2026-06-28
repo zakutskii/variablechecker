@@ -1,9 +1,9 @@
 {
-  "name": "design-checker",
+  "name": "variable-checker",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "displayName": "Design Checker",
+  "displayName": "Variable Checker",
   "description": "Audit and standardize Variables and Styles across Figma documents",
   "scripts": {
     "dev": "vite",
