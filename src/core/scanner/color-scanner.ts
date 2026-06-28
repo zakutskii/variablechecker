@@ -17,7 +17,7 @@ export class ColorScanner {
         if (isSolidColor(fill)) {
           const paint = fill as SolidPaint;
           const color = getPaintColor(paint);
-          const boundFill = (node as GeometryMixin).boundVariables?.fill;
+          const boundFill = (node as GeometryMixin).boundVariables?.fill || paint.boundVariables?.color;
 
           if (!boundFill) {
             findings.push({
@@ -64,7 +64,6 @@ export class ColorScanner {
 
     if ("strokes" in node && Array.isArray(node.strokes)) {
       const strokes = node.strokes as Paint[];
-      const boundStroke = (node as GeometryMixin).boundVariables?.stroke;
 
       for (let i = 0; i < strokes.length; i++) {
         const stroke = strokes[i];
@@ -73,6 +72,7 @@ export class ColorScanner {
         if (isSolidColor(stroke)) {
           const paint = stroke as SolidPaint;
           const color = getPaintColor(paint);
+          const boundStroke = (node as GeometryMixin).boundVariables?.stroke || paint.boundVariables?.color;
 
           if (!boundStroke) {
             findings.push({

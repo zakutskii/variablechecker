@@ -138,7 +138,7 @@
   // src/core/scanner/color-scanner.ts
   var ColorScanner = class {
     scan(node, _settings) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       const findings = [];
       const pageName = ((_a = node.parent) == null ? void 0 : _a.type) === "PAGE" ? node.parent.name : "Unknown";
       if ("fills" in node && Array.isArray(node.fills)) {
@@ -149,7 +149,7 @@
           if (isSolidColor(fill)) {
             const paint = fill;
             const color = getPaintColor(paint);
-            const boundFill = (_b = node.boundVariables) == null ? void 0 : _b.fill;
+            const boundFill = ((_b = node.boundVariables) == null ? void 0 : _b.fill) || ((_c = paint.boundVariables) == null ? void 0 : _c.color);
             if (!boundFill) {
               findings.push({
                 id: generateId(),
@@ -193,13 +193,13 @@
       }
       if ("strokes" in node && Array.isArray(node.strokes)) {
         const strokes = node.strokes;
-        const boundStroke = (_c = node.boundVariables) == null ? void 0 : _c.stroke;
         for (let i = 0; i < strokes.length; i++) {
           const stroke = strokes[i];
           if (!stroke) continue;
           if (isSolidColor(stroke)) {
             const paint = stroke;
             const color = getPaintColor(paint);
+            const boundStroke = ((_d = node.boundVariables) == null ? void 0 : _d.stroke) || ((_e = paint.boundVariables) == null ? void 0 : _e.color);
             if (!boundStroke) {
               findings.push({
                 id: generateId(),
