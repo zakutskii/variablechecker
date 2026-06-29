@@ -137,23 +137,6 @@
 
   // src/core/scanner/color-scanner.ts
   var ColorScanner = class {
-    constructor() {
-      __publicField(this, "accessibleVariableIds", /* @__PURE__ */ new Set());
-    }
-    setAccessibleVariableIds(ids) {
-      this.accessibleVariableIds = ids;
-    }
-    isVariableAliasBound(alias) {
-      if (alias == null) return false;
-      const aliases = Array.isArray(alias) ? alias : [alias];
-      for (const a of aliases) {
-        if (typeof a !== "object") continue;
-        const item = a;
-        if (item.type !== "VARIABLE_ALIAS" || !item.id) continue;
-        if (this.accessibleVariableIds.has(item.id)) return true;
-      }
-      return false;
-    }
     scan(node, _settings) {
       var _a;
       const findings = [];
@@ -162,7 +145,6 @@
       if ("fills" in node && Array.isArray(node.fills)) {
         const fills = node.fills;
         console.log(`[DesignChecker] ColorScanner: node=${node.name} fills.length=${fills.length}`);
-        console.log(`[DesignChecker] ColorScanner: accessibleVariableIds.size=${this.accessibleVariableIds.size}`);
         for (let i = 0; i < fills.length; i++) {
           const fill = fills[i];
           if (!fill) continue;
@@ -171,11 +153,9 @@
             const paint = fill;
             const color = getPaintColor(paint);
             const fillStyleId = "fillStyleId" in node ? node.fillStyleId : null;
-            const nodeBV = node.boundVariables;
             const hasStyle = !!fillStyleId;
-            const hasNodeVariable = this.isVariableAliasBound(nodeBV == null ? void 0 : nodeBV.fill);
-            console.log(`[DesignChecker] ColorScanner: fill[${i}] style=${hasStyle} nodeVar=${hasNodeVariable} accessibleSetSize=${this.accessibleVariableIds.size}`);
-            if (!hasStyle && !hasNodeVariable) {
+            console.log(`[DesignChecker] ColorScanner: fill[${i}] style=${hasStyle}`);
+            if (!hasStyle) {
               console.log(`[DesignChecker] ColorScanner: >> SHOWING fill[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
@@ -195,10 +175,11 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable})`);
+              console.log(`[DesignChecker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style applied)`);
             }
           }
           if (isGradient(fill)) {
+            console.log(`[DesignChecker] ColorScanner: >> SHOWING gradient fill[${i}] for ${node.name}`);
             findings.push({
               id: generateId(),
               layerId: node.id,
@@ -232,11 +213,9 @@
             const paint = stroke;
             const color = getPaintColor(paint);
             const strokeStyleId = "strokeStyleId" in node ? node.strokeStyleId : null;
-            const nodeBV = node.boundVariables;
             const hasStyle = !!strokeStyleId;
-            const hasNodeVariable = this.isVariableAliasBound(nodeBV == null ? void 0 : nodeBV.stroke);
-            console.log(`[DesignChecker] ColorScanner: stroke[${i}] style=${hasStyle} nodeVar=${hasNodeVariable}`);
-            if (!hasStyle && !hasNodeVariable) {
+            console.log(`[DesignChecker] ColorScanner: stroke[${i}] style=${hasStyle}`);
+            if (!hasStyle) {
               console.log(`[DesignChecker] ColorScanner: >> SHOWING stroke[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
@@ -256,7 +235,7 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable})`);
+              console.log(`[DesignChecker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style applied)`);
             }
           }
         }
@@ -1143,7 +1122,6 @@
       __publicField(this, "effectsScanner");
       __publicField(this, "layoutScanner");
       __publicField(this, "matcher");
-      __publicField(this, "variableResolver");
       __publicField(this, "styleResolver");
       __publicField(this, "cancelled", false);
       this.colorScanner = new ColorScanner();
@@ -1151,11 +1129,7 @@
       this.effectsScanner = new EffectsScanner();
       this.layoutScanner = new LayoutScanner();
       this.matcher = new Matcher(variableResolver2, styleResolver2);
-      this.variableResolver = variableResolver2;
       this.styleResolver = styleResolver2;
-    }
-    setAccessibleVariableIds(ids) {
-      this.colorScanner.setAccessibleVariableIds(ids);
     }
     cancel() {
       this.cancelled = true;
@@ -1338,7 +1312,6 @@
     constructor() {
       __publicField(this, "cache", /* @__PURE__ */ new Map());
       __publicField(this, "allVariables", []);
-      __publicField(this, "accessibleVariableIds", /* @__PURE__ */ new Set());
       __publicField(this, "initialized", false);
     }
     async initialize() {
@@ -1347,16 +1320,12 @@
         const localVariables = await this.collectLocalVariables();
         const libraryVariables = await this.collectLibraryVariables();
         this.allVariables = [...localVariables, ...libraryVariables];
-        this.accessibleVariableIds = new Set(this.allVariables.map((v) => v.id));
         this.buildCache();
         this.initialized = true;
       } catch (error) {
         console.error("Failed to initialize VariableResolver:", error);
         throw error;
       }
-    }
-    getAccessibleVariableIds() {
-      return this.accessibleVariableIds;
     }
     async collectLocalVariables() {
       var _a, _b, _c;
@@ -2154,7 +2123,6 @@
     try {
       await variableResolver.initialize();
       await styleResolver.initialize();
-      scanner.setAccessibleVariableIds(variableResolver.getAccessibleVariableIds());
       const finalSettings = settings != null ? settings : {
         scanColors: true,
         scanTypography: true,

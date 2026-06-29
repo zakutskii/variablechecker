@@ -16,7 +16,6 @@ export class Scanner {
   private effectsScanner: EffectsScanner;
   private layoutScanner: LayoutScanner;
   private matcher: Matcher;
-  private variableResolver: VariableResolver;
   private styleResolver: StyleResolver;
   private cancelled = false;
 
@@ -29,12 +28,7 @@ export class Scanner {
     this.effectsScanner = new EffectsScanner();
     this.layoutScanner = new LayoutScanner();
     this.matcher = new Matcher(variableResolver, styleResolver);
-    this.variableResolver = variableResolver;
     this.styleResolver = styleResolver;
-  }
-
-  setAccessibleVariableIds(ids: Set<string>): void {
-    this.colorScanner.setAccessibleVariableIds(ids);
   }
 
   cancel(): void {

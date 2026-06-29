@@ -93,7 +93,6 @@ async function handleStartScan(scope: string, settings?: ScanSettings): Promise<
   try {
     await variableResolver.initialize();
     await styleResolver.initialize();
-    scanner.setAccessibleVariableIds(variableResolver.getAccessibleVariableIds());
 
     const finalSettings: ScanSettings = settings ?? {
       scanColors: true,
