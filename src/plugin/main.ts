@@ -49,7 +49,7 @@ figma.on("selectionchange", () => {
 });
 
 figma.ui.onmessage = async (message: PluginMessage) => {
-  console.log(`[DesignChecker] onmessage: ${message.type}`, JSON.stringify(message).slice(0, 200));
+  console.log(`[Variable Checker] onmessage: ${message.type}`, JSON.stringify(message).slice(0, 200));
   switch (message.type) {
     case "start-scan":
       await handleStartScan(message.scope, message.settings);
@@ -185,7 +185,7 @@ async function handleApplyFix(findingId: string): Promise<void> {
 
 async function handleApplySelected(findingIds: string[]): Promise<void> {
   if (!currentScanResult) {
-    console.log(`[DesignChecker] handleApplySelected: no scan result`);
+    console.log(`[Variable Checker] handleApplySelected: no scan result`);
     return;
   }
 
@@ -193,7 +193,7 @@ async function handleApplySelected(findingIds: string[]): Promise<void> {
     findingIds.includes(f.id),
   );
 
-  console.log(`[DesignChecker] handleApplySelected: ${findingIds.length} requested, ${findings.length} found`);
+  console.log(`[Variable Checker] handleApplySelected: ${findingIds.length} requested, ${findings.length} found`);
 
   if (findings.length === 0) {
     figma.ui.postMessage({
@@ -218,7 +218,7 @@ async function handleApplySelected(findingIds: string[]): Promise<void> {
     });
   });
 
-  console.log(`[DesignChecker] handleApplySelected result:`, JSON.stringify(result));
+  console.log(`[Variable Checker] handleApplySelected result:`, JSON.stringify(result));
 
   lastApplyResult = result;
 
@@ -422,13 +422,13 @@ async function handleApplyManual(
   styleId: string | null | undefined,
 ): Promise<void> {
   if (!currentScanResult) {
-    console.log(`[DesignChecker] handleApplyManual: no scan result`);
+    console.log(`[Variable Checker] handleApplyManual: no scan result`);
     return;
   }
 
   const finding = currentScanResult.findings.find((f) => f.id === findingId);
   if (!finding) {
-    console.log(`[DesignChecker] handleApplyManual: finding ${findingId} not found`);
+    console.log(`[Variable Checker] handleApplyManual: finding ${findingId} not found`);
     return;
   }
 

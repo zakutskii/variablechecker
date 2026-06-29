@@ -130,17 +130,17 @@ export class BulkApplyEngine {
   private async applyFinding(finding: Finding): Promise<boolean> {
     const suggestion = finding.suggestion;
     if (!suggestion) {
-      console.log(`[DesignChecker] applyFinding: no suggestion for ${finding.id}`);
+      console.log(`[Variable Checker] applyFinding: no suggestion for ${finding.id}`);
       return false;
     }
 
     const node = figma.getNodeById(finding.layerId) as SceneNode | null;
     if (!node) {
-      console.log(`[DesignChecker] applyFinding: node not found ${finding.layerId}`);
+      console.log(`[Variable Checker] applyFinding: node not found ${finding.layerId}`);
       throw new Error(`Layer not found: ${finding.layerName}`);
     }
 
-    console.log(`[DesignChecker] applyFinding: ${finding.id} type=${suggestion.type} varId=${suggestion.variableId} styleId=${suggestion.styleId}`);
+    console.log(`[Variable Checker] applyFinding: ${finding.id} type=${suggestion.type} varId=${suggestion.variableId} styleId=${suggestion.styleId}`);
 
     this.saveUndoState(node);
 

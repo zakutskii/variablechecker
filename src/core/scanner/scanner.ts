@@ -45,7 +45,7 @@ export class Scanner {
     const nodes = await this.collectNodes(scope, settings);
     const totalLayers = nodes.length;
 
-    console.log(`[DesignChecker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
+    console.log(`[Variable Checker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
 
     onProgress?.({
       phase: "scanning",
@@ -71,13 +71,13 @@ export class Scanner {
           const findings = this.scanNode(node, settings);
           if (findings.length > 0) {
             const cats = [...new Set(findings.map(f => f.category))].join(",");
-            console.log(`[DesignChecker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
+            console.log(`[Variable Checker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
           } else {
-            console.log(`[DesignChecker] Scanner: node=${node.name} findings=0`);
+            console.log(`[Variable Checker] Scanner: node=${node.name} findings=0`);
           }
           allFindings.push(...findings);
         } catch (err) {
-          console.error(`[DesignChecker] Error scanning node ${node.name} (${node.id}):`, err);
+          console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
         }
 
         onProgress?.({
@@ -92,8 +92,8 @@ export class Scanner {
       await this.yieldToMainThread();
     }
 
-    console.log(`[DesignChecker] Scanner: raw findings before matching: ${allFindings.length}`);
-    console.log(`[DesignChecker] Scanner: raw findings by category:`, {
+    console.log(`[Variable Checker] Scanner: raw findings before matching: ${allFindings.length}`);
+    console.log(`[Variable Checker] Scanner: raw findings by category:`, {
       color: allFindings.filter(f => f.category === "color").length,
       typography: allFindings.filter(f => f.category === "typography").length,
       effects: allFindings.filter(f => f.category === "effects").length,

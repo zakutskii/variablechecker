@@ -10,7 +10,7 @@ export class TypographyScanner {
     const textNode = node as TextNode;
     const pageName = node.parent?.type === "PAGE" ? (node.parent as PageNode).name : "Unknown";
 
-    console.log(`[DesignChecker] TypographyScanner: node=${node.name} textStyleId=${textNode.textStyleId}`);
+    console.log(`[Variable Checker] TypographyScanner: node=${node.name} textStyleId=${textNode.textStyleId}`);
 
     if (!!textNode.textStyleId) return [];
 
@@ -22,7 +22,7 @@ export class TypographyScanner {
     if (props.fontWeight) parts.push(String(props.fontWeight));
     if (props.lineHeight) parts.push(`LH ${props.lineHeight}${props.lineHeightUnit === "PERCENT" ? "%" : "px"}`);
 
-    console.log(`[DesignChecker] TypographyScanner: node=${node.name} has no textStyleId, returning finding`);
+    console.log(`[Variable Checker] TypographyScanner: node=${node.name} has no textStyleId, returning finding`);
 
     return [{
       id: generateId(),

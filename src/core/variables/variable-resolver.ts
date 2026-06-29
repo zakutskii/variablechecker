@@ -203,7 +203,7 @@ export class VariableResolver {
     try {
       const variable = figma.variables?.getVariableById(variableId);
       if (!variable) {
-        console.error(`[DesignChecker] Variable not found: ${variableId}`);
+        console.error(`[Variable Checker] Variable not found: ${variableId}`);
         return false;
       }
 
@@ -211,13 +211,13 @@ export class VariableResolver {
         variable.variableCollectionId,
       );
       if (!collection) {
-        console.error(`[DesignChecker] Collection not found for variable: ${variable.name}`);
+        console.error(`[Variable Checker] Collection not found for variable: ${variable.name}`);
         return false;
       }
 
       const modeId = collection.defaultModeId;
 
-      console.log(`[DesignChecker] bindVariableToNode: ${node.name} type=${node.type} prop=${property} var=${variable.name} col=${collection.name} mode=${modeId}`);
+      console.log(`[Variable Checker] bindVariableToNode: ${node.name} type=${node.type} prop=${property} var=${variable.name} col=${collection.name} mode=${modeId}`);
 
       if (
         property.startsWith("fill") &&
@@ -249,7 +249,7 @@ export class VariableResolver {
 
       return this.bindNumericProperty(node, property, variable, modeId);
     } catch (e) {
-      console.error(`[DesignChecker] bindVariableToNode unexpected error for ${node.name}:`, e);
+      console.error(`[Variable Checker] bindVariableToNode unexpected error for ${node.name}:`, e);
       return false;
     }
   }
@@ -275,7 +275,7 @@ export class VariableResolver {
             return true;
           }
         } catch (e) {
-          console.error(`[DesignChecker] bindVariableToAlias failed, falling back to direct color:`, e);
+          console.error(`[Variable Checker] bindVariableToAlias failed, falling back to direct color:`, e);
         }
       }
 
@@ -286,15 +286,15 @@ export class VariableResolver {
           ...((node as GeometryMixin).boundVariables || {}),
           [aliasKey]: [{ id: variable.id, type: "VARIABLE_ALIAS" }],
         };
-        console.log(`[DesignChecker] boundVariables set directly for ${node.name}`);
+        console.log(`[Variable Checker] boundVariables set directly for ${node.name}`);
         return true;
       } catch (e) {
-        console.log(`[DesignChecker] boundVariables not writable on ${node.name}, using color fallback:`, e);
+        console.log(`[Variable Checker] boundVariables not writable on ${node.name}, using color fallback:`, e);
       }
 
       const resolvedValue = variable.valuesByMode[modeId];
       if (!resolvedValue || typeof resolvedValue !== "object" || !("r" in resolvedValue)) {
-        console.error(`[DesignChecker] Variable ${variable.name} has no color value for mode ${modeId}`);
+        console.error(`[Variable Checker] Variable ${variable.name} has no color value for mode ${modeId}`);
         return false;
       }
 
@@ -328,10 +328,10 @@ export class VariableResolver {
         ? `${(verifyPaints[0] as SolidPaint).color.r.toFixed(2)},${(verifyPaints[0] as SolidPaint).color.g.toFixed(2)},${(verifyPaints[0] as SolidPaint).color.b.toFixed(2)}`
         : "no-paints";
       const changed = origColor !== verifyColor;
-      console.log(`[DesignChecker] ${fillsOrStrokes} on ${node.name}: was=${origColor} set=${r.toFixed(2)},${g.toFixed(2)},${b.toFixed(2)} verify=${verifyColor} changed=${changed}`);
+      console.log(`[Variable Checker] ${fillsOrStrokes} on ${node.name}: was=${origColor} set=${r.toFixed(2)},${g.toFixed(2)},${b.toFixed(2)} verify=${verifyColor} changed=${changed}`);
       return true;
     } catch (e) {
-      console.error(`[DesignChecker] applyBoundVariableOrColor failed for ${node.name}:`, e);
+      console.error(`[Variable Checker] applyBoundVariableOrColor failed for ${node.name}:`, e);
       return false;
     }
   }

@@ -141,22 +141,22 @@
       var _a;
       const findings = [];
       const pageName = ((_a = node.parent) == null ? void 0 : _a.type) === "PAGE" ? node.parent.name : "Unknown";
-      console.log(`[DesignChecker] ColorScanner.scan: node=${node.name} type=${node.type}`);
+      console.log(`[Variable Checker] ColorScanner.scan: node=${node.name} type=${node.type}`);
       if ("fills" in node && Array.isArray(node.fills)) {
         const fills = node.fills;
-        console.log(`[DesignChecker] ColorScanner: node=${node.name} fills.length=${fills.length}`);
+        console.log(`[Variable Checker] ColorScanner: node=${node.name} fills.length=${fills.length}`);
         for (let i = 0; i < fills.length; i++) {
           const fill = fills[i];
           if (!fill) continue;
-          console.log(`[DesignChecker] ColorScanner: fill[${i}] type=${fill.type}`);
+          console.log(`[Variable Checker] ColorScanner: fill[${i}] type=${fill.type}`);
           if (isSolidColor(fill)) {
             const paint = fill;
             const color = getPaintColor(paint);
             const fillStyleId = "fillStyleId" in node ? node.fillStyleId : null;
             const hasStyle = !!fillStyleId;
-            console.log(`[DesignChecker] ColorScanner: fill[${i}] style=${hasStyle}`);
+            console.log(`[Variable Checker] ColorScanner: fill[${i}] style=${hasStyle}`);
             if (!hasStyle) {
-              console.log(`[DesignChecker] ColorScanner: >> SHOWING fill[${i}] for ${node.name}`);
+              console.log(`[Variable Checker] ColorScanner: >> SHOWING fill[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
                 layerId: node.id,
@@ -175,11 +175,11 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style applied)`);
+              console.log(`[Variable Checker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style applied)`);
             }
           }
           if (isGradient(fill)) {
-            console.log(`[DesignChecker] ColorScanner: >> SHOWING gradient fill[${i}] for ${node.name}`);
+            console.log(`[Variable Checker] ColorScanner: >> SHOWING gradient fill[${i}] for ${node.name}`);
             findings.push({
               id: generateId(),
               layerId: node.id,
@@ -200,23 +200,23 @@
           }
         }
       } else {
-        console.log(`[DesignChecker] ColorScanner: node=${node.name} has no fills property`);
+        console.log(`[Variable Checker] ColorScanner: node=${node.name} has no fills property`);
       }
       if ("strokes" in node && Array.isArray(node.strokes)) {
         const strokes = node.strokes;
-        console.log(`[DesignChecker] ColorScanner: node=${node.name} strokes.length=${strokes.length}`);
+        console.log(`[Variable Checker] ColorScanner: node=${node.name} strokes.length=${strokes.length}`);
         for (let i = 0; i < strokes.length; i++) {
           const stroke = strokes[i];
           if (!stroke) continue;
-          console.log(`[DesignChecker] ColorScanner: stroke[${i}] type=${stroke.type}`);
+          console.log(`[Variable Checker] ColorScanner: stroke[${i}] type=${stroke.type}`);
           if (isSolidColor(stroke)) {
             const paint = stroke;
             const color = getPaintColor(paint);
             const strokeStyleId = "strokeStyleId" in node ? node.strokeStyleId : null;
             const hasStyle = !!strokeStyleId;
-            console.log(`[DesignChecker] ColorScanner: stroke[${i}] style=${hasStyle}`);
+            console.log(`[Variable Checker] ColorScanner: stroke[${i}] style=${hasStyle}`);
             if (!hasStyle) {
-              console.log(`[DesignChecker] ColorScanner: >> SHOWING stroke[${i}] for ${node.name}`);
+              console.log(`[Variable Checker] ColorScanner: >> SHOWING stroke[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
                 layerId: node.id,
@@ -235,12 +235,12 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style applied)`);
+              console.log(`[Variable Checker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style applied)`);
             }
           }
         }
       }
-      console.log(`[DesignChecker] ColorScanner: node=${node.name} findings=${findings.length}`);
+      console.log(`[Variable Checker] ColorScanner: node=${node.name} findings=${findings.length}`);
       return findings;
     }
   };
@@ -345,7 +345,7 @@
       if (node.type !== "TEXT") return [];
       const textNode = node;
       const pageName = ((_a = node.parent) == null ? void 0 : _a.type) === "PAGE" ? node.parent.name : "Unknown";
-      console.log(`[DesignChecker] TypographyScanner: node=${node.name} textStyleId=${textNode.textStyleId}`);
+      console.log(`[Variable Checker] TypographyScanner: node=${node.name} textStyleId=${textNode.textStyleId}`);
       if (!!textNode.textStyleId) return [];
       const props = extractTypographyProperties(textNode);
       const formatted = formatTypographyProperties(props);
@@ -354,7 +354,7 @@
       if (props.fontSize) parts.push(`${props.fontSize}px`);
       if (props.fontWeight) parts.push(String(props.fontWeight));
       if (props.lineHeight) parts.push(`LH ${props.lineHeight}${props.lineHeightUnit === "PERCENT" ? "%" : "px"}`);
-      console.log(`[DesignChecker] TypographyScanner: node=${node.name} has no textStyleId, returning finding`);
+      console.log(`[Variable Checker] TypographyScanner: node=${node.name} has no textStyleId, returning finding`);
       return [{
         id: generateId(),
         layerId: node.id,
@@ -1138,7 +1138,7 @@
       this.cancelled = false;
       const nodes = await this.collectNodes(scope, settings);
       const totalLayers = nodes.length;
-      console.log(`[DesignChecker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
+      console.log(`[Variable Checker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
       onProgress == null ? void 0 : onProgress({
         phase: "scanning",
         totalLayers,
@@ -1158,13 +1158,13 @@
             const findings = this.scanNode(node, settings);
             if (findings.length > 0) {
               const cats = [...new Set(findings.map((f) => f.category))].join(",");
-              console.log(`[DesignChecker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
+              console.log(`[Variable Checker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
             } else {
-              console.log(`[DesignChecker] Scanner: node=${node.name} findings=0`);
+              console.log(`[Variable Checker] Scanner: node=${node.name} findings=0`);
             }
             allFindings.push(...findings);
           } catch (err) {
-            console.error(`[DesignChecker] Error scanning node ${node.name} (${node.id}):`, err);
+            console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
           }
           onProgress == null ? void 0 : onProgress({
             phase: "scanning",
@@ -1176,8 +1176,8 @@
         }
         await this.yieldToMainThread();
       }
-      console.log(`[DesignChecker] Scanner: raw findings before matching: ${allFindings.length}`);
-      console.log(`[DesignChecker] Scanner: raw findings by category:`, {
+      console.log(`[Variable Checker] Scanner: raw findings before matching: ${allFindings.length}`);
+      console.log(`[Variable Checker] Scanner: raw findings by category:`, {
         color: allFindings.filter((f) => f.category === "color").length,
         typography: allFindings.filter((f) => f.category === "typography").length,
         effects: allFindings.filter((f) => f.category === "effects").length,
@@ -1472,18 +1472,18 @@
       try {
         const variable = (_a = figma.variables) == null ? void 0 : _a.getVariableById(variableId);
         if (!variable) {
-          console.error(`[DesignChecker] Variable not found: ${variableId}`);
+          console.error(`[Variable Checker] Variable not found: ${variableId}`);
           return false;
         }
         const collection = (_b = figma.variables) == null ? void 0 : _b.getVariableCollectionById(
           variable.variableCollectionId
         );
         if (!collection) {
-          console.error(`[DesignChecker] Collection not found for variable: ${variable.name}`);
+          console.error(`[Variable Checker] Collection not found for variable: ${variable.name}`);
           return false;
         }
         const modeId = collection.defaultModeId;
-        console.log(`[DesignChecker] bindVariableToNode: ${node.name} type=${node.type} prop=${property} var=${variable.name} col=${collection.name} mode=${modeId}`);
+        console.log(`[Variable Checker] bindVariableToNode: ${node.name} type=${node.type} prop=${property} var=${variable.name} col=${collection.name} mode=${modeId}`);
         if (property.startsWith("fill") && "fillStyleId" in node && typeof node.fillStyleId === "string") {
           return this.applyBoundVariableOrColor(
             node,
@@ -1504,7 +1504,7 @@
         }
         return this.bindNumericProperty(node, property, variable, modeId);
       } catch (e) {
-        console.error(`[DesignChecker] bindVariableToNode unexpected error for ${node.name}:`, e);
+        console.error(`[Variable Checker] bindVariableToNode unexpected error for ${node.name}:`, e);
         return false;
       }
     }
@@ -1524,7 +1524,7 @@
               return true;
             }
           } catch (e) {
-            console.error(`[DesignChecker] bindVariableToAlias failed, falling back to direct color:`, e);
+            console.error(`[Variable Checker] bindVariableToAlias failed, falling back to direct color:`, e);
           }
         }
         try {
@@ -1532,14 +1532,14 @@
           node.boundVariables = __spreadProps(__spreadValues({}, node.boundVariables || {}), {
             [aliasKey]: [{ id: variable.id, type: "VARIABLE_ALIAS" }]
           });
-          console.log(`[DesignChecker] boundVariables set directly for ${node.name}`);
+          console.log(`[Variable Checker] boundVariables set directly for ${node.name}`);
           return true;
         } catch (e) {
-          console.log(`[DesignChecker] boundVariables not writable on ${node.name}, using color fallback:`, e);
+          console.log(`[Variable Checker] boundVariables not writable on ${node.name}, using color fallback:`, e);
         }
         const resolvedValue = variable.valuesByMode[modeId];
         if (!resolvedValue || typeof resolvedValue !== "object" || !("r" in resolvedValue)) {
-          console.error(`[DesignChecker] Variable ${variable.name} has no color value for mode ${modeId}`);
+          console.error(`[Variable Checker] Variable ${variable.name} has no color value for mode ${modeId}`);
           return false;
         }
         const { r, g, b, a } = resolvedValue;
@@ -1562,10 +1562,10 @@
         const verifyPaints = node[fillsOrStrokes];
         const verifyColor = Array.isArray(verifyPaints) && verifyPaints.length > 0 ? `${verifyPaints[0].color.r.toFixed(2)},${verifyPaints[0].color.g.toFixed(2)},${verifyPaints[0].color.b.toFixed(2)}` : "no-paints";
         const changed = origColor !== verifyColor;
-        console.log(`[DesignChecker] ${fillsOrStrokes} on ${node.name}: was=${origColor} set=${r.toFixed(2)},${g.toFixed(2)},${b.toFixed(2)} verify=${verifyColor} changed=${changed}`);
+        console.log(`[Variable Checker] ${fillsOrStrokes} on ${node.name}: was=${origColor} set=${r.toFixed(2)},${g.toFixed(2)},${b.toFixed(2)} verify=${verifyColor} changed=${changed}`);
         return true;
       } catch (e) {
-        console.error(`[DesignChecker] applyBoundVariableOrColor failed for ${node.name}:`, e);
+        console.error(`[Variable Checker] applyBoundVariableOrColor failed for ${node.name}:`, e);
         return false;
       }
     }
@@ -1902,15 +1902,15 @@
     async applyFinding(finding) {
       const suggestion = finding.suggestion;
       if (!suggestion) {
-        console.log(`[DesignChecker] applyFinding: no suggestion for ${finding.id}`);
+        console.log(`[Variable Checker] applyFinding: no suggestion for ${finding.id}`);
         return false;
       }
       const node = figma.getNodeById(finding.layerId);
       if (!node) {
-        console.log(`[DesignChecker] applyFinding: node not found ${finding.layerId}`);
+        console.log(`[Variable Checker] applyFinding: node not found ${finding.layerId}`);
         throw new Error(`Layer not found: ${finding.layerName}`);
       }
-      console.log(`[DesignChecker] applyFinding: ${finding.id} type=${suggestion.type} varId=${suggestion.variableId} styleId=${suggestion.styleId}`);
+      console.log(`[Variable Checker] applyFinding: ${finding.id} type=${suggestion.type} varId=${suggestion.variableId} styleId=${suggestion.styleId}`);
       this.saveUndoState(node);
       if (suggestion.type === "variable" && suggestion.variableId) {
         return this.applyVariable(node, suggestion.variableId, finding);
@@ -2081,7 +2081,7 @@
     });
   });
   figma.ui.onmessage = async (message) => {
-    console.log(`[DesignChecker] onmessage: ${message.type}`, JSON.stringify(message).slice(0, 200));
+    console.log(`[Variable Checker] onmessage: ${message.type}`, JSON.stringify(message).slice(0, 200));
     switch (message.type) {
       case "start-scan":
         await handleStartScan(message.scope, message.settings);
@@ -2202,13 +2202,13 @@
   }
   async function handleApplySelected(findingIds) {
     if (!currentScanResult) {
-      console.log(`[DesignChecker] handleApplySelected: no scan result`);
+      console.log(`[Variable Checker] handleApplySelected: no scan result`);
       return;
     }
     const findings = currentScanResult.findings.filter(
       (f) => findingIds.includes(f.id)
     );
-    console.log(`[DesignChecker] handleApplySelected: ${findingIds.length} requested, ${findings.length} found`);
+    console.log(`[Variable Checker] handleApplySelected: ${findingIds.length} requested, ${findings.length} found`);
     if (findings.length === 0) {
       figma.ui.postMessage({
         type: "apply-complete",
@@ -2230,7 +2230,7 @@
         payload: { current, total, message }
       });
     });
-    console.log(`[DesignChecker] handleApplySelected result:`, JSON.stringify(result));
+    console.log(`[Variable Checker] handleApplySelected result:`, JSON.stringify(result));
     lastApplyResult = result;
     figma.ui.postMessage({
       type: "apply-complete",
@@ -2392,12 +2392,12 @@
   }
   async function handleApplyManual(findingId, variableId, styleId) {
     if (!currentScanResult) {
-      console.log(`[DesignChecker] handleApplyManual: no scan result`);
+      console.log(`[Variable Checker] handleApplyManual: no scan result`);
       return;
     }
     const finding = currentScanResult.findings.find((f) => f.id === findingId);
     if (!finding) {
-      console.log(`[DesignChecker] handleApplyManual: finding ${findingId} not found`);
+      console.log(`[Variable Checker] handleApplyManual: finding ${findingId} not found`);
       return;
     }
     if (!finding.suggestion) {
