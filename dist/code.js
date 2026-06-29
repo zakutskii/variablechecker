@@ -172,18 +172,10 @@
             const color = getPaintColor(paint);
             const fillStyleId = "fillStyleId" in node ? node.fillStyleId : null;
             const nodeBV = node.boundVariables;
-            const paintBV = paint.boundVariables;
             const hasStyle = !!fillStyleId;
             const hasNodeVariable = this.isVariableAliasBound(nodeBV == null ? void 0 : nodeBV.fill);
-            const hasPaintVariable = this.isVariableAliasBound(paintBV == null ? void 0 : paintBV.color);
-            console.log(`[DesignChecker] ColorScanner: fill[${i}] heuristics: style=${hasStyle} nodeVar=${hasNodeVariable} paintVar=${hasPaintVariable}`);
-            console.log(`[DesignChecker] ColorScanner: fill[${i}] raw nodeBV?.fill=`, nodeBV == null ? void 0 : nodeBV.fill);
-            console.log(`[DesignChecker] ColorScanner: fill[${i}] raw paintBV?.color=`, paintBV == null ? void 0 : paintBV.color);
-            if (paintBV == null ? void 0 : paintBV.color) {
-              const id = paintBV.color.id;
-              console.log(`[DesignChecker] ColorScanner: fill[${i}] paintBV.color.id=${id} in set=${this.accessibleVariableIds.has(id)}`);
-            }
-            if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
+            console.log(`[DesignChecker] ColorScanner: fill[${i}] style=${hasStyle} nodeVar=${hasNodeVariable} accessibleSetSize=${this.accessibleVariableIds.size}`);
+            if (!hasStyle && !hasNodeVariable) {
               console.log(`[DesignChecker] ColorScanner: >> SHOWING fill[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
@@ -203,7 +195,7 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable} paintVar=${hasPaintVariable})`);
+              console.log(`[DesignChecker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable})`);
             }
           }
           if (isGradient(fill)) {
@@ -241,14 +233,10 @@
             const color = getPaintColor(paint);
             const strokeStyleId = "strokeStyleId" in node ? node.strokeStyleId : null;
             const nodeBV = node.boundVariables;
-            const paintBV = paint.boundVariables;
             const hasStyle = !!strokeStyleId;
             const hasNodeVariable = this.isVariableAliasBound(nodeBV == null ? void 0 : nodeBV.stroke);
-            const hasPaintVariable = this.isVariableAliasBound(paintBV == null ? void 0 : paintBV.color);
-            console.log(`[DesignChecker] ColorScanner: stroke[${i}] heuristics: style=${hasStyle} nodeVar=${hasNodeVariable} paintVar=${hasPaintVariable}`);
-            console.log(`[DesignChecker] ColorScanner: stroke[${i}] raw nodeBV?.stroke=`, nodeBV == null ? void 0 : nodeBV.stroke);
-            console.log(`[DesignChecker] ColorScanner: stroke[${i}] raw paintBV?.color=`, paintBV == null ? void 0 : paintBV.color);
-            if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
+            console.log(`[DesignChecker] ColorScanner: stroke[${i}] style=${hasStyle} nodeVar=${hasNodeVariable}`);
+            if (!hasStyle && !hasNodeVariable) {
               console.log(`[DesignChecker] ColorScanner: >> SHOWING stroke[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
@@ -268,7 +256,7 @@
                 pageName
               });
             } else {
-              console.log(`[DesignChecker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable} paintVar=${hasPaintVariable})`);
+              console.log(`[DesignChecker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style=${hasStyle} nodeVar=${hasNodeVariable})`);
             }
           }
         }
