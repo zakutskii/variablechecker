@@ -377,7 +377,7 @@ export default function App() {
               Rescan
             </Button>
             <Button variant="default" size="sm" className="h-7 text-xs" disabled={isApplying || applyableCount === 0} onClick={applyAll}>
-              {isApplying ? "Applying..." : `Apply (${applyableCount})`}
+              {isApplying ? "Applying..." : applyableCount > 0 ? `Apply (${applyableCount})` : "Apply"}
             </Button>
           </div>
         </div>
