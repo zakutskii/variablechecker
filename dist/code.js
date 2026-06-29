@@ -137,16 +137,20 @@
 
   // src/core/scanner/color-scanner.ts
   var ColorScanner = class {
+    constructor() {
+      __publicField(this, "accessibleVariableIds", /* @__PURE__ */ new Set());
+    }
+    setAccessibleVariableIds(ids) {
+      this.accessibleVariableIds = ids;
+    }
     isVariableAliasBound(alias) {
-      var _a;
       if (alias == null) return false;
       const aliases = Array.isArray(alias) ? alias : [alias];
       for (const a of aliases) {
         if (typeof a !== "object") continue;
         const item = a;
         if (item.type !== "VARIABLE_ALIAS" || !item.id) continue;
-        const variable = (_a = figma.variables) == null ? void 0 : _a.getVariableById(item.id);
-        if (variable != null) return true;
+        if (this.accessibleVariableIds.has(item.id)) return true;
       }
       return false;
     }
@@ -1149,6 +1153,9 @@
       this.variableResolver = variableResolver2;
       this.styleResolver = styleResolver2;
     }
+    setAccessibleVariableIds(ids) {
+      this.colorScanner.setAccessibleVariableIds(ids);
+    }
     cancel() {
       this.cancelled = true;
     }
@@ -1324,6 +1331,7 @@
     constructor() {
       __publicField(this, "cache", /* @__PURE__ */ new Map());
       __publicField(this, "allVariables", []);
+      __publicField(this, "accessibleVariableIds", /* @__PURE__ */ new Set());
       __publicField(this, "initialized", false);
     }
     async initialize() {
@@ -1332,12 +1340,16 @@
         const localVariables = await this.collectLocalVariables();
         const libraryVariables = await this.collectLibraryVariables();
         this.allVariables = [...localVariables, ...libraryVariables];
+        this.accessibleVariableIds = new Set(this.allVariables.map((v) => v.id));
         this.buildCache();
         this.initialized = true;
       } catch (error) {
         console.error("Failed to initialize VariableResolver:", error);
         throw error;
       }
+    }
+    getAccessibleVariableIds() {
+      return this.accessibleVariableIds;
     }
     async collectLocalVariables() {
       var _a, _b, _c;
@@ -2135,6 +2147,7 @@
     try {
       await variableResolver.initialize();
       await styleResolver.initialize();
+      scanner.setAccessibleVariableIds(variableResolver.getAccessibleVariableIds());
       const finalSettings = settings != null ? settings : {
         scanColors: true,
         scanTypography: true,

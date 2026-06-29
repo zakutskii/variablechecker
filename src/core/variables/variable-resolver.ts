@@ -3,6 +3,7 @@ import type { VariableInfo, FigmaColor } from "@/types";
 export class VariableResolver {
   private cache: Map<string, VariableInfo[]> = new Map();
   private allVariables: VariableInfo[] = [];
+  private accessibleVariableIds: Set<string> = new Set();
   private initialized = false;
 
   async initialize(): Promise<void> {
@@ -12,12 +13,17 @@ export class VariableResolver {
       const localVariables = await this.collectLocalVariables();
       const libraryVariables = await this.collectLibraryVariables();
       this.allVariables = [...localVariables, ...libraryVariables];
+      this.accessibleVariableIds = new Set(this.allVariables.map(v => v.id));
       this.buildCache();
       this.initialized = true;
     } catch (error) {
       console.error("Failed to initialize VariableResolver:", error);
       throw error;
     }
+  }
+
+  getAccessibleVariableIds(): Set<string> {
+    return this.accessibleVariableIds;
   }
 
   private async collectLocalVariables(): Promise<VariableInfo[]> {

@@ -33,6 +33,10 @@ export class Scanner {
     this.styleResolver = styleResolver;
   }
 
+  setAccessibleVariableIds(ids: Set<string>): void {
+    this.colorScanner.setAccessibleVariableIds(ids);
+  }
+
   cancel(): void {
     this.cancelled = true;
   }

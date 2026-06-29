@@ -4,16 +4,20 @@ import { formatColorValue } from "@/utils/color";
 import { isSolidColor, isGradient, getPaintColor } from "@/plugin/utils/color";
 
 export class ColorScanner {
+  private accessibleVariableIds: Set<string> = new Set();
+
+  setAccessibleVariableIds(ids: Set<string>): void {
+    this.accessibleVariableIds = ids;
+  }
+
   private isVariableAliasBound(alias: unknown): boolean {
     if (alias == null) return false;
-    // Figma returns arrays for fills/strokes, single object for simple fields
     const aliases = Array.isArray(alias) ? alias : [alias];
     for (const a of aliases) {
       if (typeof a !== "object") continue;
       const item = a as { type?: string; id?: string };
       if (item.type !== "VARIABLE_ALIAS" || !item.id) continue;
-      const variable = figma.variables?.getVariableById(item.id);
-      if (variable != null) return true;
+      if (this.accessibleVariableIds.has(item.id)) return true;
     }
     return false;
   }
