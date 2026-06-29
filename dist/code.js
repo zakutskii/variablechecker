@@ -1116,6 +1116,7 @@
       this.cancelled = true;
     }
     async scan(scope, settings, onProgress) {
+      var _a, _b;
       this.cancelled = false;
       const nodes = await this.collectNodes(scope, settings);
       const totalLayers = nodes.length;
@@ -1129,6 +1130,7 @@
       });
       const allFindings = [];
       let scannedCount = 0;
+      console.log(`[Variable Checker] Scanner: starting scan loop for ${nodes.length} nodes`);
       for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
         if (this.cancelled) {
           throw new Error("Scan cancelled");
@@ -1143,16 +1145,20 @@
             console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
           }
           scannedCount++;
+        }
+        try {
           onProgress == null ? void 0 : onProgress({
             phase: "scanning",
             totalLayers,
             scannedLayers: scannedCount,
             findingsCount: allFindings.length,
-            currentLayerName: node.name
+            currentLayerName: (_b = (_a = batch[batch.length - 1]) == null ? void 0 : _a.name) != null ? _b : ""
           });
+        } catch (e) {
         }
         await this.yieldToMainThread();
       }
+      console.log(`[Variable Checker] Scanner: scan loop done, ${allFindings.length} findings from ${scannedCount} nodes`);
       console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
       onProgress == null ? void 0 : onProgress({
         phase: "matching",

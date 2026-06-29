@@ -58,6 +58,8 @@ export class Scanner {
     const allFindings: Finding[] = [];
     let scannedCount = 0;
 
+    console.log(`[Variable Checker] Scanner: starting scan loop for ${nodes.length} nodes`);
+
     for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
       if (this.cancelled) {
         throw new Error("Scan cancelled");
@@ -76,18 +78,24 @@ export class Scanner {
         }
 
         scannedCount++;
+      }
 
+      try {
         onProgress?.({
           phase: "scanning",
           totalLayers,
           scannedLayers: scannedCount,
           findingsCount: allFindings.length,
-          currentLayerName: node.name,
+          currentLayerName: batch[batch.length - 1]?.name ?? "",
         });
+      } catch {
+        // ignore progress errors
       }
 
       await this.yieldToMainThread();
     }
+
+    console.log(`[Variable Checker] Scanner: scan loop done, ${allFindings.length} findings from ${scannedCount} nodes`);
 
     console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
 
