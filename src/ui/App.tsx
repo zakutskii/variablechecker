@@ -373,7 +373,7 @@ export default function App() {
             <span className="font-medium text-foreground">{uniqueLayers}</span> item{uniqueLayers !== 1 ? "s" : ""}
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" className="h-7 text-xs" onClick={startScan}>
+            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={startScan}>
               Rescan
             </Button>
             <Button variant="default" size="sm" className="h-7 text-xs" disabled={isApplying || applyableCount === 0} onClick={applyAll}>
