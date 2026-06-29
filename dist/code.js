@@ -141,22 +141,17 @@
       var _a;
       const findings = [];
       const pageName = ((_a = node.parent) == null ? void 0 : _a.type) === "PAGE" ? node.parent.name : "Unknown";
-      console.log(`[Variable Checker] ColorScanner.scan: node=${node.name} type=${node.type}`);
       if ("fills" in node && Array.isArray(node.fills)) {
         const fills = node.fills;
-        console.log(`[Variable Checker] ColorScanner: node=${node.name} fills.length=${fills.length}`);
         for (let i = 0; i < fills.length; i++) {
           const fill = fills[i];
           if (!fill) continue;
-          console.log(`[Variable Checker] ColorScanner: fill[${i}] type=${fill.type}`);
           if (isSolidColor(fill)) {
             const paint = fill;
             const color = getPaintColor(paint);
             const fillStyleId = "fillStyleId" in node ? node.fillStyleId : null;
             const hasStyle = !!fillStyleId;
-            console.log(`[Variable Checker] ColorScanner: fill[${i}] style=${hasStyle}`);
             if (!hasStyle) {
-              console.log(`[Variable Checker] ColorScanner: >> SHOWING fill[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
                 layerId: node.id,
@@ -174,12 +169,9 @@
                 parentChain: findParentChain(node),
                 pageName
               });
-            } else {
-              console.log(`[Variable Checker] ColorScanner: >> SKIPPING fill[${i}] for ${node.name} (style applied)`);
             }
           }
           if (isGradient(fill)) {
-            console.log(`[Variable Checker] ColorScanner: >> SHOWING gradient fill[${i}] for ${node.name}`);
             findings.push({
               id: generateId(),
               layerId: node.id,
@@ -199,24 +191,18 @@
             });
           }
         }
-      } else {
-        console.log(`[Variable Checker] ColorScanner: node=${node.name} has no fills property`);
       }
       if ("strokes" in node && Array.isArray(node.strokes)) {
         const strokes = node.strokes;
-        console.log(`[Variable Checker] ColorScanner: node=${node.name} strokes.length=${strokes.length}`);
         for (let i = 0; i < strokes.length; i++) {
           const stroke = strokes[i];
           if (!stroke) continue;
-          console.log(`[Variable Checker] ColorScanner: stroke[${i}] type=${stroke.type}`);
           if (isSolidColor(stroke)) {
             const paint = stroke;
             const color = getPaintColor(paint);
             const strokeStyleId = "strokeStyleId" in node ? node.strokeStyleId : null;
             const hasStyle = !!strokeStyleId;
-            console.log(`[Variable Checker] ColorScanner: stroke[${i}] style=${hasStyle}`);
             if (!hasStyle) {
-              console.log(`[Variable Checker] ColorScanner: >> SHOWING stroke[${i}] for ${node.name}`);
               findings.push({
                 id: generateId(),
                 layerId: node.id,
@@ -234,13 +220,10 @@
                 parentChain: findParentChain(node),
                 pageName
               });
-            } else {
-              console.log(`[Variable Checker] ColorScanner: >> SKIPPING stroke[${i}] for ${node.name} (style applied)`);
             }
           }
         }
       }
-      console.log(`[Variable Checker] ColorScanner: node=${node.name} findings=${findings.length}`);
       return findings;
     }
   };
@@ -345,7 +328,6 @@
       if (node.type !== "TEXT") return [];
       const textNode = node;
       const pageName = ((_a = node.parent) == null ? void 0 : _a.type) === "PAGE" ? node.parent.name : "Unknown";
-      console.log(`[Variable Checker] TypographyScanner: node=${node.name} textStyleId=${textNode.textStyleId}`);
       if (!!textNode.textStyleId) return [];
       const props = extractTypographyProperties(textNode);
       const formatted = formatTypographyProperties(props);
@@ -354,7 +336,6 @@
       if (props.fontSize) parts.push(`${props.fontSize}px`);
       if (props.fontWeight) parts.push(String(props.fontWeight));
       if (props.lineHeight) parts.push(`LH ${props.lineHeight}${props.lineHeightUnit === "PERCENT" ? "%" : "px"}`);
-      console.log(`[Variable Checker] TypographyScanner: node=${node.name} has no textStyleId, returning finding`);
       return [{
         id: generateId(),
         layerId: node.id,
@@ -1147,6 +1128,7 @@
         currentLayerName: ""
       });
       const allFindings = [];
+      let scannedCount = 0;
       for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
         if (this.cancelled) {
           throw new Error("Scan cancelled");
@@ -1156,33 +1138,22 @@
           if (this.cancelled) throw new Error("Scan cancelled");
           try {
             const findings = this.scanNode(node, settings);
-            if (findings.length > 0) {
-              const cats = [...new Set(findings.map((f) => f.category))].join(",");
-              console.log(`[Variable Checker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
-            } else {
-              console.log(`[Variable Checker] Scanner: node=${node.name} findings=0`);
-            }
             allFindings.push(...findings);
           } catch (err) {
             console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
           }
+          scannedCount++;
           onProgress == null ? void 0 : onProgress({
             phase: "scanning",
             totalLayers,
-            scannedLayers: allFindings.length,
+            scannedLayers: scannedCount,
             findingsCount: allFindings.length,
             currentLayerName: node.name
           });
         }
         await this.yieldToMainThread();
       }
-      console.log(`[Variable Checker] Scanner: raw findings before matching: ${allFindings.length}`);
-      console.log(`[Variable Checker] Scanner: raw findings by category:`, {
-        color: allFindings.filter((f) => f.category === "color").length,
-        typography: allFindings.filter((f) => f.category === "typography").length,
-        effects: allFindings.filter((f) => f.category === "effects").length,
-        layout: allFindings.filter((f) => f.category === "layout").length
-      });
+      console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
       onProgress == null ? void 0 : onProgress({
         phase: "matching",
         totalLayers,

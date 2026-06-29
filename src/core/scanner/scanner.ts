@@ -56,6 +56,7 @@ export class Scanner {
     });
 
     const allFindings: Finding[] = [];
+    let scannedCount = 0;
 
     for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
       if (this.cancelled) {
@@ -69,21 +70,17 @@ export class Scanner {
 
         try {
           const findings = this.scanNode(node, settings);
-          if (findings.length > 0) {
-            const cats = [...new Set(findings.map(f => f.category))].join(",");
-            console.log(`[Variable Checker] Scanner: node=${node.name} findings=${findings.length} cats=${cats}`);
-          } else {
-            console.log(`[Variable Checker] Scanner: node=${node.name} findings=0`);
-          }
           allFindings.push(...findings);
         } catch (err) {
           console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
         }
 
+        scannedCount++;
+
         onProgress?.({
           phase: "scanning",
           totalLayers,
-          scannedLayers: allFindings.length,
+          scannedLayers: scannedCount,
           findingsCount: allFindings.length,
           currentLayerName: node.name,
         });
@@ -92,13 +89,7 @@ export class Scanner {
       await this.yieldToMainThread();
     }
 
-    console.log(`[Variable Checker] Scanner: raw findings before matching: ${allFindings.length}`);
-    console.log(`[Variable Checker] Scanner: raw findings by category:`, {
-      color: allFindings.filter(f => f.category === "color").length,
-      typography: allFindings.filter(f => f.category === "typography").length,
-      effects: allFindings.filter(f => f.category === "effects").length,
-      layout: allFindings.filter(f => f.category === "layout").length,
-    });
+    console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
 
     onProgress?.({
       phase: "matching",
