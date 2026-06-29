@@ -397,7 +397,10 @@ export default function App() {
             </svg>
           </div>
           <div className="space-y-1 mb-6">
-            <h1 className="text-base font-semibold">Variable Checker</h1>
+            <div className="flex items-center justify-center gap-1.5">
+              <h1 className="text-base font-semibold">Variable Checker</h1>
+              <span className="text-[10px] font-medium text-muted-foreground border border-border rounded-md px-1.5 py-0.5">Beta</span>
+            </div>
             <p className="text-xs text-muted-foreground">Find and fix hardcoded values in your designs</p>
           </div>
           <div className="flex flex-col gap-6">
