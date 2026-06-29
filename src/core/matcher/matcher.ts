@@ -60,14 +60,18 @@ export class Matcher {
         matched.push(finding);
       }
 
-      if (i % 50 === 0) {
-        onProgress?.({
-          phase: "matching",
-          totalLayers: total,
-          scannedLayers: i,
-          findingsCount: matched.length,
-          currentLayerName: "",
-        });
+      if (i % 10 === 0) {
+        try {
+          onProgress?.({
+            phase: "matching",
+            totalLayers: total,
+            scannedLayers: i,
+            findingsCount: matched.length,
+            currentLayerName: "",
+          });
+        } catch {
+          // ignore
+        }
 
         await this.yieldToMainThread();
       }

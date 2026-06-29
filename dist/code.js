@@ -634,6 +634,7 @@
     constructor(variableResolver2, styleResolver2) {
       __publicField(this, "variableResolver");
       __publicField(this, "styleResolver");
+      __publicField(this, "styleColorCache", /* @__PURE__ */ new Map());
       this.variableResolver = variableResolver2;
       this.styleResolver = styleResolver2;
     }
@@ -819,21 +820,34 @@
     }
     getStyleColor(style) {
       var _a;
+      if (this.styleColorCache.has(style.id)) return this.styleColorCache.get(style.id);
       try {
         const paintStyle = figma.getStyleById(style.id);
-        if (!paintStyle) return null;
+        if (!paintStyle) {
+          this.styleColorCache.set(style.id, null);
+          return null;
+        }
         const paints = paintStyle.paints;
-        if (paints.length === 0) return null;
+        if (paints.length === 0) {
+          this.styleColorCache.set(style.id, null);
+          return null;
+        }
         const firstPaint = paints[0];
-        if (firstPaint.type !== "SOLID") return null;
+        if (firstPaint.type !== "SOLID") {
+          this.styleColorCache.set(style.id, null);
+          return null;
+        }
         const solidPaint = firstPaint;
-        return {
+        const color = {
           r: solidPaint.color.r,
           g: solidPaint.color.g,
           b: solidPaint.color.b,
           a: (_a = solidPaint.opacity) != null ? _a : 1
         };
+        this.styleColorCache.set(style.id, color);
+        return color;
       } catch (e) {
+        this.styleColorCache.set(style.id, null);
         return null;
       }
     }
@@ -1075,14 +1089,17 @@
         } else {
           matched.push(finding);
         }
-        if (i % 50 === 0) {
-          onProgress == null ? void 0 : onProgress({
-            phase: "matching",
-            totalLayers: total,
-            scannedLayers: i,
-            findingsCount: matched.length,
-            currentLayerName: ""
-          });
+        if (i % 10 === 0) {
+          try {
+            onProgress == null ? void 0 : onProgress({
+              phase: "matching",
+              totalLayers: total,
+              scannedLayers: i,
+              findingsCount: matched.length,
+              currentLayerName: ""
+            });
+          } catch (e) {
+          }
           await this.yieldToMainThread();
         }
       }

@@ -6,6 +6,7 @@ import { StyleResolver } from "@/core/styles/style-resolver";
 export class ColorMatcher {
   private variableResolver: VariableResolver;
   private styleResolver: StyleResolver;
+  private styleColorCache: Map<string, FigmaColor | null> = new Map();
 
   constructor(variableResolver: VariableResolver, styleResolver: StyleResolver) {
     this.variableResolver = variableResolver;
@@ -221,24 +222,37 @@ export class ColorMatcher {
   }
 
   private getStyleColor(style: StyleInfo): FigmaColor | null {
+    if (this.styleColorCache.has(style.id)) return this.styleColorCache.get(style.id)!;
     try {
       const paintStyle = figma.getStyleById(style.id) as PaintStyle | null;
-      if (!paintStyle) return null;
+      if (!paintStyle) {
+        this.styleColorCache.set(style.id, null);
+        return null;
+      }
 
       const paints = paintStyle.paints;
-      if (paints.length === 0) return null;
+      if (paints.length === 0) {
+        this.styleColorCache.set(style.id, null);
+        return null;
+      }
 
       const firstPaint = paints[0];
-      if (firstPaint.type !== "SOLID") return null;
+      if (firstPaint.type !== "SOLID") {
+        this.styleColorCache.set(style.id, null);
+        return null;
+      }
 
       const solidPaint = firstPaint as SolidPaint;
-      return {
+      const color: FigmaColor = {
         r: solidPaint.color.r,
         g: solidPaint.color.g,
         b: solidPaint.color.b,
         a: solidPaint.opacity ?? 1,
       };
+      this.styleColorCache.set(style.id, color);
+      return color;
     } catch {
+      this.styleColorCache.set(style.id, null);
       return null;
     }
   }
