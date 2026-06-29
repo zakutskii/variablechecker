@@ -382,35 +382,28 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-background p-6">
-      <div className="w-full max-w-xs text-center">
-        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto mb-4">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
-            <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-        </div>
-        <div className="space-y-1 mb-6">
-          <h1 className="text-base font-semibold">Variable Checker</h1>
-          <p className="text-xs text-muted-foreground">Find and fix hardcoded values in your designs</p>
-        </div>
-        <div className="flex flex-col gap-6">
-          <div className="relative">
-            <select
-              value={scanScope}
-              onChange={(e) => setScanScope(e.target.value as ScanScope)}
-              className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm appearance-none cursor-pointer pr-7"
-            >
-              <option value="selection">Current Selection</option>
-              <option value="page">Current Page</option>
-              <option value="file">All Pages</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </div>
+    <div className="h-screen flex flex-col bg-background">
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="w-full max-w-xs text-center">
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mx-auto mb-4">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary-foreground">
+              <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
           </div>
-          <Button onClick={startScan} className="w-full" size="sm">Run Scan</Button>
+          <div className="space-y-1 mb-6">
+            <h1 className="text-base font-semibold">Variable Checker</h1>
+            <p className="text-xs text-muted-foreground">Find and fix hardcoded values in your designs</p>
+          </div>
+          <div className="flex flex-col gap-6">
+            <Tabs value={scanScope} onValueChange={(v) => setScanScope(v as ScanScope)}>
+              <TabsList className="w-full">
+                <TabsTrigger value="selection" className="flex-1 text-xs">Selection</TabsTrigger>
+                <TabsTrigger value="page" className="flex-1 text-xs">Page</TabsTrigger>
+                <TabsTrigger value="file" className="flex-1 text-xs">File</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button onClick={startScan} className="w-full" size="sm">Run Scan</Button>
+          </div>
         </div>
       </div>
       <Toaster />
