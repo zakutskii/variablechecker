@@ -3,7 +3,6 @@ import { ColorScanner } from "./color-scanner";
 import { TypographyScanner } from "./typography-scanner";
 import { EffectsScanner } from "./effects-scanner";
 import { LayoutScanner } from "./layout-scanner";
-import { Matcher } from "@/core/matcher/matcher";
 import { VariableResolver } from "@/core/variables/variable-resolver";
 import { StyleResolver } from "@/core/styles/style-resolver";
 import { SCAN_BATCH_SIZE } from "@/shared/constants";
@@ -15,19 +14,17 @@ export class Scanner {
   private typographyScanner: TypographyScanner;
   private effectsScanner: EffectsScanner;
   private layoutScanner: LayoutScanner;
-  private matcher: Matcher;
   private styleResolver: StyleResolver;
   private cancelled = false;
 
   constructor(
-    variableResolver: VariableResolver,
+    _variableResolver: VariableResolver,
     styleResolver: StyleResolver,
   ) {
     this.colorScanner = new ColorScanner();
     this.typographyScanner = new TypographyScanner();
     this.effectsScanner = new EffectsScanner();
     this.layoutScanner = new LayoutScanner();
-    this.matcher = new Matcher(variableResolver, styleResolver);
     this.styleResolver = styleResolver;
   }
 
@@ -99,32 +96,18 @@ export class Scanner {
 
     console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
 
+    const summary = this.generateSummary(allFindings, totalLayers);
+
     onProgress?.({
-      phase: "matching",
+      phase: "complete",
       totalLayers,
       scannedLayers: totalLayers,
       findingsCount: allFindings.length,
       currentLayerName: "",
     });
 
-    const matchedFindings = await this.matcher.matchFindings(
-      allFindings,
-      settings,
-      onProgress,
-    );
-
-    const summary = this.generateSummary(matchedFindings, totalLayers);
-
-    onProgress?.({
-      phase: "complete",
-      totalLayers,
-      scannedLayers: totalLayers,
-      findingsCount: matchedFindings.length,
-      currentLayerName: "",
-    });
-
     return {
-      findings: matchedFindings,
+      findings: allFindings,
       summary,
       timestamp: Date.now(),
       scope,

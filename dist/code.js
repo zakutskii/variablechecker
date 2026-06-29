@@ -629,6 +629,181 @@
     }
   };
 
+  // src/core/scanner/scanner.ts
+  var Scanner = class {
+    constructor(_variableResolver, styleResolver2) {
+      __publicField(this, "colorScanner");
+      __publicField(this, "typographyScanner");
+      __publicField(this, "effectsScanner");
+      __publicField(this, "layoutScanner");
+      __publicField(this, "styleResolver");
+      __publicField(this, "cancelled", false);
+      this.colorScanner = new ColorScanner();
+      this.typographyScanner = new TypographyScanner();
+      this.effectsScanner = new EffectsScanner();
+      this.layoutScanner = new LayoutScanner();
+      this.styleResolver = styleResolver2;
+    }
+    cancel() {
+      this.cancelled = true;
+    }
+    async scan(scope, settings, onProgress) {
+      var _a, _b;
+      this.cancelled = false;
+      const nodes = await this.collectNodes(scope, settings);
+      const totalLayers = nodes.length;
+      console.log(`[Variable Checker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
+      onProgress == null ? void 0 : onProgress({
+        phase: "scanning",
+        totalLayers,
+        scannedLayers: 0,
+        findingsCount: 0,
+        currentLayerName: ""
+      });
+      const allFindings = [];
+      let scannedCount = 0;
+      console.log(`[Variable Checker] Scanner: starting scan loop for ${nodes.length} nodes`);
+      for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
+        if (this.cancelled) {
+          throw new Error("Scan cancelled");
+        }
+        const batch = nodes.slice(i, i + SCAN_BATCH_SIZE);
+        for (const node of batch) {
+          if (this.cancelled) throw new Error("Scan cancelled");
+          try {
+            const findings = this.scanNode(node, settings);
+            allFindings.push(...findings);
+          } catch (err) {
+            console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
+          }
+          scannedCount++;
+        }
+        try {
+          onProgress == null ? void 0 : onProgress({
+            phase: "scanning",
+            totalLayers,
+            scannedLayers: scannedCount,
+            findingsCount: allFindings.length,
+            currentLayerName: (_b = (_a = batch[batch.length - 1]) == null ? void 0 : _a.name) != null ? _b : ""
+          });
+        } catch (e) {
+        }
+        await this.yieldToMainThread();
+      }
+      console.log(`[Variable Checker] Scanner: scan loop done, ${allFindings.length} findings from ${scannedCount} nodes`);
+      console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
+      const summary = this.generateSummary(allFindings, totalLayers);
+      onProgress == null ? void 0 : onProgress({
+        phase: "complete",
+        totalLayers,
+        scannedLayers: totalLayers,
+        findingsCount: allFindings.length,
+        currentLayerName: ""
+      });
+      return {
+        findings: allFindings,
+        summary,
+        timestamp: Date.now(),
+        scope
+      };
+    }
+    async collectNodes(scope, settings) {
+      const nodes = [];
+      switch (scope) {
+        case "selection":
+          for (const node of figma.currentPage.selection) {
+            this.collectAllNodes(node, nodes, settings);
+          }
+          break;
+        case "page":
+          for (const node of figma.currentPage.children) {
+            this.collectAllNodes(node, nodes, settings);
+          }
+          break;
+        case "file": {
+          const pages = figma.root.children;
+          for (const page of pages) {
+            for (const node of page.children) {
+              this.collectAllNodes(node, nodes, settings);
+            }
+          }
+          break;
+        }
+      }
+      return nodes;
+    }
+    collectAllNodes(node, result, settings) {
+      if (this.cancelled) return;
+      if (settings.safetySkipInstances && node.type === "INSTANCE") {
+        return;
+      }
+      result.push(node);
+      if ("children" in node) {
+        const children = node.children;
+        for (const child of children) {
+          this.collectAllNodes(child, result, settings);
+        }
+      }
+    }
+    scanNode(node, settings) {
+      var _a;
+      const findings = [];
+      if (settings.safetySkipInstances && node.type === "INSTANCE") {
+        return findings;
+      }
+      if (settings.safetySkipLibraryAssets) {
+        if (node.type === "COMPONENT" || node.type === "INSTANCE") {
+          const mainComponent = node.mainComponent;
+          if (mainComponent && ((_a = mainComponent.parent) == null ? void 0 : _a.type) === "COMPONENT_SET") {
+            return findings;
+          }
+        }
+      }
+      if (settings.scanColors) {
+        findings.push(...this.colorScanner.scan(node, settings));
+      }
+      if (settings.scanTypography) {
+        findings.push(...this.typographyScanner.scan(node, settings));
+      }
+      if (settings.scanEffects) {
+        findings.push(...this.effectsScanner.scan(node, settings));
+      }
+      if (settings.scanLayout) {
+        findings.push(...this.layoutScanner.scan(node, settings));
+      }
+      return findings;
+    }
+    async yieldToMainThread() {
+      return new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
+    }
+    generateSummary(findings, totalLayers) {
+      var _a;
+      const breakdown = {
+        color: 0,
+        typography: 0,
+        effects: 0,
+        layout: 0,
+        variable: 0
+      };
+      for (const finding of findings) {
+        breakdown[finding.category] = ((_a = breakdown[finding.category]) != null ? _a : 0) + 1;
+      }
+      const variablesFound = findings.filter((f) => f.source === "variable").length;
+      const stylesFound = findings.filter((f) => f.source === "style").length;
+      const potentialFixes = findings.filter((f) => f.suggestion !== null).length;
+      return {
+        totalLayersScanned: totalLayers,
+        hardcodedValuesFound: findings.length,
+        variablesFound,
+        stylesFound,
+        potentialFixes,
+        categoriesBreakdown: breakdown
+      };
+    }
+  };
+
   // src/core/matcher/color-matcher.ts
   var ColorMatcher = class {
     constructor(variableResolver2, styleResolver2) {
@@ -1109,195 +1284,6 @@
       return new Promise((resolve) => {
         setTimeout(resolve, 5);
       });
-    }
-  };
-
-  // src/core/scanner/scanner.ts
-  var Scanner = class {
-    constructor(variableResolver2, styleResolver2) {
-      __publicField(this, "colorScanner");
-      __publicField(this, "typographyScanner");
-      __publicField(this, "effectsScanner");
-      __publicField(this, "layoutScanner");
-      __publicField(this, "matcher");
-      __publicField(this, "styleResolver");
-      __publicField(this, "cancelled", false);
-      this.colorScanner = new ColorScanner();
-      this.typographyScanner = new TypographyScanner();
-      this.effectsScanner = new EffectsScanner();
-      this.layoutScanner = new LayoutScanner();
-      this.matcher = new Matcher(variableResolver2, styleResolver2);
-      this.styleResolver = styleResolver2;
-    }
-    cancel() {
-      this.cancelled = true;
-    }
-    async scan(scope, settings, onProgress) {
-      var _a, _b;
-      this.cancelled = false;
-      const nodes = await this.collectNodes(scope, settings);
-      const totalLayers = nodes.length;
-      console.log(`[Variable Checker] Scanner: collected ${totalLayers} nodes, scope=${scope}`);
-      onProgress == null ? void 0 : onProgress({
-        phase: "scanning",
-        totalLayers,
-        scannedLayers: 0,
-        findingsCount: 0,
-        currentLayerName: ""
-      });
-      const allFindings = [];
-      let scannedCount = 0;
-      console.log(`[Variable Checker] Scanner: starting scan loop for ${nodes.length} nodes`);
-      for (let i = 0; i < nodes.length; i += SCAN_BATCH_SIZE) {
-        if (this.cancelled) {
-          throw new Error("Scan cancelled");
-        }
-        const batch = nodes.slice(i, i + SCAN_BATCH_SIZE);
-        for (const node of batch) {
-          if (this.cancelled) throw new Error("Scan cancelled");
-          try {
-            const findings = this.scanNode(node, settings);
-            allFindings.push(...findings);
-          } catch (err) {
-            console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
-          }
-          scannedCount++;
-        }
-        try {
-          onProgress == null ? void 0 : onProgress({
-            phase: "scanning",
-            totalLayers,
-            scannedLayers: scannedCount,
-            findingsCount: allFindings.length,
-            currentLayerName: (_b = (_a = batch[batch.length - 1]) == null ? void 0 : _a.name) != null ? _b : ""
-          });
-        } catch (e) {
-        }
-        await this.yieldToMainThread();
-      }
-      console.log(`[Variable Checker] Scanner: scan loop done, ${allFindings.length} findings from ${scannedCount} nodes`);
-      console.log(`[Variable Checker] Scanner: scanned ${scannedCount} nodes, ${allFindings.length} findings`);
-      onProgress == null ? void 0 : onProgress({
-        phase: "matching",
-        totalLayers,
-        scannedLayers: totalLayers,
-        findingsCount: allFindings.length,
-        currentLayerName: ""
-      });
-      const matchedFindings = await this.matcher.matchFindings(
-        allFindings,
-        settings,
-        onProgress
-      );
-      const summary = this.generateSummary(matchedFindings, totalLayers);
-      onProgress == null ? void 0 : onProgress({
-        phase: "complete",
-        totalLayers,
-        scannedLayers: totalLayers,
-        findingsCount: matchedFindings.length,
-        currentLayerName: ""
-      });
-      return {
-        findings: matchedFindings,
-        summary,
-        timestamp: Date.now(),
-        scope
-      };
-    }
-    async collectNodes(scope, settings) {
-      const nodes = [];
-      switch (scope) {
-        case "selection":
-          for (const node of figma.currentPage.selection) {
-            this.collectAllNodes(node, nodes, settings);
-          }
-          break;
-        case "page":
-          for (const node of figma.currentPage.children) {
-            this.collectAllNodes(node, nodes, settings);
-          }
-          break;
-        case "file": {
-          const pages = figma.root.children;
-          for (const page of pages) {
-            for (const node of page.children) {
-              this.collectAllNodes(node, nodes, settings);
-            }
-          }
-          break;
-        }
-      }
-      return nodes;
-    }
-    collectAllNodes(node, result, settings) {
-      if (this.cancelled) return;
-      if (settings.safetySkipInstances && node.type === "INSTANCE") {
-        return;
-      }
-      result.push(node);
-      if ("children" in node) {
-        const children = node.children;
-        for (const child of children) {
-          this.collectAllNodes(child, result, settings);
-        }
-      }
-    }
-    scanNode(node, settings) {
-      var _a;
-      const findings = [];
-      if (settings.safetySkipInstances && node.type === "INSTANCE") {
-        return findings;
-      }
-      if (settings.safetySkipLibraryAssets) {
-        if (node.type === "COMPONENT" || node.type === "INSTANCE") {
-          const mainComponent = node.mainComponent;
-          if (mainComponent && ((_a = mainComponent.parent) == null ? void 0 : _a.type) === "COMPONENT_SET") {
-            return findings;
-          }
-        }
-      }
-      if (settings.scanColors) {
-        findings.push(...this.colorScanner.scan(node, settings));
-      }
-      if (settings.scanTypography) {
-        findings.push(...this.typographyScanner.scan(node, settings));
-      }
-      if (settings.scanEffects) {
-        findings.push(...this.effectsScanner.scan(node, settings));
-      }
-      if (settings.scanLayout) {
-        findings.push(...this.layoutScanner.scan(node, settings));
-      }
-      return findings;
-    }
-    async yieldToMainThread() {
-      return new Promise((resolve) => {
-        setTimeout(resolve, 5);
-      });
-    }
-    generateSummary(findings, totalLayers) {
-      var _a;
-      const breakdown = {
-        color: 0,
-        typography: 0,
-        effects: 0,
-        layout: 0,
-        variable: 0
-      };
-      for (const finding of findings) {
-        breakdown[finding.category] = ((_a = breakdown[finding.category]) != null ? _a : 0) + 1;
-      }
-      const variablesFound = findings.filter((f) => f.source === "variable").length;
-      const stylesFound = findings.filter((f) => f.source === "style").length;
-      const potentialFixes = findings.filter((f) => f.suggestion !== null).length;
-      return {
-        totalLayersScanned: totalLayers,
-        hardcodedValuesFound: findings.length,
-        variablesFound,
-        stylesFound,
-        potentialFixes,
-        categoriesBreakdown: breakdown
-      };
     }
   };
 
