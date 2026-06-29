@@ -22,11 +22,17 @@ export class ColorScanner {
         if (isSolidColor(fill)) {
           const paint = fill as SolidPaint;
           const color = getPaintColor(paint);
-          const fillStyleApplied = "fillStyleId" in node && !!(node as GeometryMixin).fillStyleId;
+          const fillStyleId = "fillStyleId" in node ? (node as GeometryMixin).fillStyleId : null;
+          const nodeBV = (node as SceneNode & { boundVariables?: Record<string, unknown> }).boundVariables;
+          const paintBV = (paint as Record<string, unknown>).boundVariables;
+          const hasStyle = !!fillStyleId;
+          const hasNodeVariable = nodeBV?.fill != null;
+          const hasPaintVariable = paintBV?.color != null;
 
-          console.log(`[DesignChecker] ColorScanner: solid fill[${i}] style=${fillStyleApplied} color=${formatColorValue(color)}`);
+          console.log(`[DesignChecker] ColorScanner: fill[${i}] nodeBV=`, nodeBV?.fill, ` paintBV=`, paintBV?.color);
+          console.log(`[DesignChecker] ColorScanner: fill[${i}] hasStyle=${hasStyle} hasNodeVar=${hasNodeVariable} hasPaintVar=${hasPaintVariable}`);
 
-          if (!fillStyleApplied) {
+          if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
             findings.push({
               id: generateId(),
               layerId: node.id,
@@ -84,11 +90,17 @@ export class ColorScanner {
         if (isSolidColor(stroke)) {
           const paint = stroke as SolidPaint;
           const color = getPaintColor(paint);
-          const strokeStyleApplied = "strokeStyleId" in node && !!(node as GeometryMixin).strokeStyleId;
+          const strokeStyleId = "strokeStyleId" in node ? (node as GeometryMixin).strokeStyleId : null;
+          const nodeBV = (node as SceneNode & { boundVariables?: Record<string, unknown> }).boundVariables;
+          const paintBV = (paint as Record<string, unknown>).boundVariables;
+          const hasStyle = !!strokeStyleId;
+          const hasNodeVariable = nodeBV?.stroke != null;
+          const hasPaintVariable = paintBV?.color != null;
 
-          console.log(`[DesignChecker] ColorScanner: solid stroke[${i}] style=${strokeStyleApplied} color=${formatColorValue(color)}`);
+          console.log(`[DesignChecker] ColorScanner: stroke[${i}] nodeBV=`, nodeBV?.stroke, ` paintBV=`, paintBV?.color);
+          console.log(`[DesignChecker] ColorScanner: stroke[${i}] hasStyle=${hasStyle} hasNodeVar=${hasNodeVariable} hasPaintVar=${hasPaintVariable}`);
 
-          if (!strokeStyleApplied) {
+          if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
             findings.push({
               id: generateId(),
               layerId: node.id,

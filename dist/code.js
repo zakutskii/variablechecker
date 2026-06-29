@@ -152,9 +152,15 @@
           if (isSolidColor(fill)) {
             const paint = fill;
             const color = getPaintColor(paint);
-            const fillStyleApplied = "fillStyleId" in node && !!node.fillStyleId;
-            console.log(`[DesignChecker] ColorScanner: solid fill[${i}] style=${fillStyleApplied} color=${formatColorValue(color)}`);
-            if (!fillStyleApplied) {
+            const fillStyleId = "fillStyleId" in node ? node.fillStyleId : null;
+            const nodeBV = node.boundVariables;
+            const paintBV = paint.boundVariables;
+            const hasStyle = !!fillStyleId;
+            const hasNodeVariable = (nodeBV == null ? void 0 : nodeBV.fill) != null;
+            const hasPaintVariable = (paintBV == null ? void 0 : paintBV.color) != null;
+            console.log(`[DesignChecker] ColorScanner: fill[${i}] nodeBV=`, nodeBV == null ? void 0 : nodeBV.fill, ` paintBV=`, paintBV == null ? void 0 : paintBV.color);
+            console.log(`[DesignChecker] ColorScanner: fill[${i}] hasStyle=${hasStyle} hasNodeVar=${hasNodeVariable} hasPaintVar=${hasPaintVariable}`);
+            if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
               findings.push({
                 id: generateId(),
                 layerId: node.id,
@@ -207,9 +213,15 @@
           if (isSolidColor(stroke)) {
             const paint = stroke;
             const color = getPaintColor(paint);
-            const strokeStyleApplied = "strokeStyleId" in node && !!node.strokeStyleId;
-            console.log(`[DesignChecker] ColorScanner: solid stroke[${i}] style=${strokeStyleApplied} color=${formatColorValue(color)}`);
-            if (!strokeStyleApplied) {
+            const strokeStyleId = "strokeStyleId" in node ? node.strokeStyleId : null;
+            const nodeBV = node.boundVariables;
+            const paintBV = paint.boundVariables;
+            const hasStyle = !!strokeStyleId;
+            const hasNodeVariable = (nodeBV == null ? void 0 : nodeBV.stroke) != null;
+            const hasPaintVariable = (paintBV == null ? void 0 : paintBV.color) != null;
+            console.log(`[DesignChecker] ColorScanner: stroke[${i}] nodeBV=`, nodeBV == null ? void 0 : nodeBV.stroke, ` paintBV=`, paintBV == null ? void 0 : paintBV.color);
+            console.log(`[DesignChecker] ColorScanner: stroke[${i}] hasStyle=${hasStyle} hasNodeVar=${hasNodeVariable} hasPaintVar=${hasPaintVariable}`);
+            if (!hasStyle && !hasNodeVariable && !hasPaintVariable) {
               findings.push({
                 id: generateId(),
                 layerId: node.id,
