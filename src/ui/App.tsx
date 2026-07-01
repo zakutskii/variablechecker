@@ -346,7 +346,7 @@ export default function App() {
             <div className="flex flex-wrap gap-1.5 mt-3">
               <Badge
                 variant={dimensionSection === "" ? "default" : "outline"}
-                className="cursor-pointer text-[11px] px-2 py-0.5"
+                className={"cursor-pointer text-[11px] px-2 py-0.5" + (dimensionSection !== "" ? " font-normal" : "")}
                 onClick={() => { setDimensionSection(""); setPage(1); }}
               >
                 All
@@ -355,7 +355,7 @@ export default function App() {
                 <Badge
                   key={s}
                   variant={dimensionSection === s ? "default" : "outline"}
-                  className="cursor-pointer text-[11px] px-2 py-0.5"
+                  className={"cursor-pointer text-[11px] px-2 py-0.5" + (dimensionSection !== s ? " font-normal" : "")}
                   onClick={() => { setDimensionSection(s); setPage(1); }}
                 >
                   {s}
