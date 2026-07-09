@@ -1,12 +1,13 @@
 {
   "name": "Variable Checker",
-  "id": "variable-checker",
+  "id": "1654079777090446636",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/index.html",
   "capabilities": [],
   "enableProposedApi": false,
   "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": ["none"]
   }

@@ -22,7 +22,7 @@ export class VariableResolver {
 
   private async collectLocalVariables(): Promise<VariableInfo[]> {
     const variables: VariableInfo[] = [];
-    const collections = figma.variables?.getLocalVariableCollections() ?? [];
+    const collections = await figma.variables?.getLocalVariableCollectionsAsync() ?? [];
 
     for (const collection of collections) {
       const variableIds = collection.variableIds;

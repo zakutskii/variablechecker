@@ -1332,7 +1332,7 @@
     async collectLocalVariables() {
       var _a, _b, _c;
       const variables = [];
-      const collections = (_b = (_a = figma.variables) == null ? void 0 : _a.getLocalVariableCollections()) != null ? _b : [];
+      const collections = (_b = await ((_a = figma.variables) == null ? void 0 : _a.getLocalVariableCollectionsAsync())) != null ? _b : [];
       for (const collection of collections) {
         const variableIds = collection.variableIds;
         for (const variableId of variableIds) {
@@ -1638,7 +1638,7 @@
     async initialize() {
       if (this.initialized) return;
       try {
-        const localStyles = this.collectLocalStyles();
+        const localStyles = await this.collectLocalStyles();
         const libraryStyles = await this.collectLibraryStyles();
         this.allStyles = [...localStyles, ...libraryStyles];
         this.buildCache();
@@ -1648,29 +1648,44 @@
         throw error;
       }
     }
-    collectLocalStyles() {
-      var _a;
+    async collectLocalStyles() {
+      var _a, _b, _c;
       const styles = [];
-      const styleTypes = ["FILL", "TEXT", "EFFECT"];
-      for (const styleType of styleTypes) {
-        const figmaStyles = figma.getLocalPaintStyles ? figma.getLocalPaintStyles() : [];
-        const textStyles = figma.getLocalTextStyles ? figma.getLocalTextStyles() : [];
-        const effectStyles = figma.getLocalEffectStyles ? figma.getLocalEffectStyles() : [];
-        let targetStyles = [];
-        if (styleType === "FILL") targetStyles = figma.getLocalPaintStyles();
-        else if (styleType === "TEXT") targetStyles = figma.getLocalTextStyles();
-        else if (styleType === "EFFECT") targetStyles = figma.getLocalEffectStyles();
-        for (const style of targetStyles) {
-          styles.push({
-            id: style.id,
-            name: style.name,
-            type: styleType,
-            source: "local",
-            remote: false,
-            key: (_a = style.key) != null ? _a : style.id,
-            description: style.description
-          });
-        }
+      const paintStyles = await figma.getLocalPaintStylesAsync();
+      for (const style of paintStyles) {
+        styles.push({
+          id: style.id,
+          name: style.name,
+          type: "FILL",
+          source: "local",
+          remote: false,
+          key: (_a = style.key) != null ? _a : style.id,
+          description: style.description
+        });
+      }
+      const textStyles = await figma.getLocalTextStylesAsync();
+      for (const style of textStyles) {
+        styles.push({
+          id: style.id,
+          name: style.name,
+          type: "TEXT",
+          source: "local",
+          remote: false,
+          key: (_b = style.key) != null ? _b : style.id,
+          description: style.description
+        });
+      }
+      const effectStyles = await figma.getLocalEffectStylesAsync();
+      for (const style of effectStyles) {
+        styles.push({
+          id: style.id,
+          name: style.name,
+          type: "EFFECT",
+          source: "local",
+          remote: false,
+          key: (_c = style.key) != null ? _c : style.id,
+          description: style.description
+        });
       }
       return styles;
     }
