@@ -134,7 +134,7 @@ export class BulkApplyEngine {
       return false;
     }
 
-    const node = figma.getNodeById(finding.layerId) as SceneNode | null;
+    const node = await figma.getNodeByIdAsync(finding.layerId) as SceneNode | null;
     if (!node) {
       console.log(`[Variable Checker] applyFinding: node not found ${finding.layerId}`);
       throw new Error(`Layer not found: ${finding.layerName}`);
@@ -145,7 +145,7 @@ export class BulkApplyEngine {
     this.saveUndoState(node);
 
     if (suggestion.type === "variable" && suggestion.variableId) {
-      return this.applyVariable(node, suggestion.variableId, finding);
+      return await this.applyVariable(node, suggestion.variableId, finding);
     }
 
     if (suggestion.type === "style" && suggestion.styleId) {
@@ -155,11 +155,11 @@ export class BulkApplyEngine {
     return false;
   }
 
-  private applyVariable(
+  private async applyVariable(
     node: SceneNode,
     variableId: string,
     finding: Finding,
-  ): boolean {
+  ): Promise<boolean> {
     return this.variableResolver.bindVariableToNode(
       node,
       variableId,
@@ -211,7 +211,7 @@ export class BulkApplyEngine {
 
     for (const op of operations) {
       try {
-        const node = figma.getNodeById(op.layerId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.layerId) as SceneNode | null;
         if (!node) continue;
 
         const state = op.previousState as Record<string, unknown>;

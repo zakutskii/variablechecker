@@ -18,7 +18,7 @@ export class TypographyMatcher {
     if (finding.category !== "typography" || !settings.matchTextStyles) return null;
 
     const textStyles = this.styleResolver.getTextStyles();
-    const node = figma.getNodeById(finding.layerId) as TextNode | null;
+    const node = await figma.getNodeByIdAsync(finding.layerId) as TextNode | null;
     if (!node || node.type !== "TEXT") return null;
 
     const layerProps = extractTypographyProperties(node);

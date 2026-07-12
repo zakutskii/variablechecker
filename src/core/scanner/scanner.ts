@@ -68,7 +68,7 @@ export class Scanner {
         if (this.cancelled) throw new Error("Scan cancelled");
 
         try {
-          const findings = this.scanNode(node, settings);
+          const findings = await this.scanNode(node, settings);
           allFindings.push(...findings);
         } catch (err) {
           console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
@@ -161,7 +161,7 @@ export class Scanner {
     }
   }
 
-  private scanNode(node: SceneNode, settings: ScanSettings): Finding[] {
+  private async scanNode(node: SceneNode, settings: ScanSettings): Promise<Finding[]> {
     const findings: Finding[] = [];
 
     if (settings.safetySkipInstances && node.type === "INSTANCE") {
@@ -169,8 +169,8 @@ export class Scanner {
     }
 
     if (settings.safetySkipLibraryAssets) {
-      if (node.type === "COMPONENT" || node.type === "INSTANCE") {
-        const mainComponent = (node as InstanceNode).mainComponent;
+      if (node.type === "INSTANCE") {
+        const mainComponent = await (node as InstanceNode).getMainComponentAsync();
         if (mainComponent && mainComponent.parent?.type === "COMPONENT_SET") {
           return findings;
         }

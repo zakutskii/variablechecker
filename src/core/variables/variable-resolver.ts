@@ -27,7 +27,7 @@ export class VariableResolver {
     for (const collection of collections) {
       const variableIds = collection.variableIds;
       for (const variableId of variableIds) {
-        const variable = figma.variables?.getVariableById(variableId);
+        const variable = await figma.variables?.getVariableByIdAsync(variableId);
         if (!variable) continue;
 
         const resolvedValue = variable.valuesByMode[collection.defaultModeId];
@@ -63,7 +63,7 @@ export class VariableResolver {
 
       for (const collection of collections) {
         for (const variableRef of collection.variableReferences ?? []) {
-          const variable = figma.variables?.getVariableById(variableRef.id);
+          const variable = await figma.variables?.getVariableByIdAsync(variableRef.id);
           if (!variable) continue;
 
           const resolvedValue = variable.valuesByMode[collection.defaultModeId];
@@ -195,19 +195,19 @@ export class VariableResolver {
     return results.map((r) => r.variable);
   }
 
-  bindVariableToNode(
+  async bindVariableToNode(
     node: SceneNode,
     variableId: string,
     property: string,
-  ): boolean {
+  ): Promise<boolean> {
     try {
-      const variable = figma.variables?.getVariableById(variableId);
+      const variable = await figma.variables?.getVariableByIdAsync(variableId);
       if (!variable) {
         console.error(`[Variable Checker] Variable not found: ${variableId}`);
         return false;
       }
 
-      const collection = figma.variables?.getVariableCollectionById(
+      const collection = await figma.variables?.getVariableCollectionByIdAsync(
         variable.variableCollectionId,
       );
       if (!collection) {

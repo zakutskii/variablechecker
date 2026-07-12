@@ -693,7 +693,7 @@
         for (const node of batch) {
           if (this.cancelled) throw new Error("Scan cancelled");
           try {
-            const findings = this.scanNode(node, settings);
+            const findings = await this.scanNode(node, settings);
             allFindings.push(...findings);
           } catch (err) {
             console.error(`[Variable Checker] Error scanning node ${node.name} (${node.id}):`, err);
@@ -767,15 +767,15 @@
         }
       }
     }
-    scanNode(node, settings) {
+    async scanNode(node, settings) {
       var _a;
       const findings = [];
       if (settings.safetySkipInstances && node.type === "INSTANCE") {
         return findings;
       }
       if (settings.safetySkipLibraryAssets) {
-        if (node.type === "COMPONENT" || node.type === "INSTANCE") {
-          const mainComponent = node.mainComponent;
+        if (node.type === "INSTANCE") {
+          const mainComponent = await node.getMainComponentAsync();
           if (mainComponent && ((_a = mainComponent.parent) == null ? void 0 : _a.type) === "COMPONENT_SET") {
             return findings;
           }
@@ -1059,7 +1059,7 @@
     async match(finding, settings) {
       if (finding.category !== "typography" || !settings.matchTextStyles) return null;
       const textStyles = this.styleResolver.getTextStyles();
-      const node = figma.getNodeById(finding.layerId);
+      const node = await figma.getNodeByIdAsync(finding.layerId);
       if (!node || node.type !== "TEXT") return null;
       const layerProps = extractTypographyProperties(node);
       const candidates = [];
@@ -1336,7 +1336,7 @@
       for (const collection of collections) {
         const variableIds = collection.variableIds;
         for (const variableId of variableIds) {
-          const variable = (_c = figma.variables) == null ? void 0 : _c.getVariableById(variableId);
+          const variable = await ((_c = figma.variables) == null ? void 0 : _c.getVariableByIdAsync(variableId));
           if (!variable) continue;
           const resolvedValue = variable.valuesByMode[collection.defaultModeId];
           if (resolvedValue === void 0) continue;
@@ -1362,7 +1362,7 @@
         if (!collections) return variables;
         for (const collection of collections) {
           for (const variableRef of (_b = collection.variableReferences) != null ? _b : []) {
-            const variable = (_c = figma.variables) == null ? void 0 : _c.getVariableById(variableRef.id);
+            const variable = await ((_c = figma.variables) == null ? void 0 : _c.getVariableByIdAsync(variableRef.id));
             if (!variable) continue;
             const resolvedValue = variable.valuesByMode[collection.defaultModeId];
             if (resolvedValue === void 0) continue;
@@ -1469,17 +1469,17 @@
       results.sort((a, b) => a.distance - b.distance);
       return results.map((r) => r.variable);
     }
-    bindVariableToNode(node, variableId, property) {
+    async bindVariableToNode(node, variableId, property) {
       var _a, _b;
       try {
-        const variable = (_a = figma.variables) == null ? void 0 : _a.getVariableById(variableId);
+        const variable = await ((_a = figma.variables) == null ? void 0 : _a.getVariableByIdAsync(variableId));
         if (!variable) {
           console.error(`[Variable Checker] Variable not found: ${variableId}`);
           return false;
         }
-        const collection = (_b = figma.variables) == null ? void 0 : _b.getVariableCollectionById(
+        const collection = await ((_b = figma.variables) == null ? void 0 : _b.getVariableCollectionByIdAsync(
           variable.variableCollectionId
-        );
+        ));
         if (!collection) {
           console.error(`[Variable Checker] Collection not found for variable: ${variable.name}`);
           return false;
@@ -1922,7 +1922,7 @@
         console.log(`[Variable Checker] applyFinding: no suggestion for ${finding.id}`);
         return false;
       }
-      const node = figma.getNodeById(finding.layerId);
+      const node = await figma.getNodeByIdAsync(finding.layerId);
       if (!node) {
         console.log(`[Variable Checker] applyFinding: node not found ${finding.layerId}`);
         throw new Error(`Layer not found: ${finding.layerName}`);
@@ -1930,14 +1930,14 @@
       console.log(`[Variable Checker] applyFinding: ${finding.id} type=${suggestion.type} varId=${suggestion.variableId} styleId=${suggestion.styleId}`);
       this.saveUndoState(node);
       if (suggestion.type === "variable" && suggestion.variableId) {
-        return this.applyVariable(node, suggestion.variableId, finding);
+        return await this.applyVariable(node, suggestion.variableId, finding);
       }
       if (suggestion.type === "style" && suggestion.styleId) {
         return this.applyStyle(node, suggestion.styleId, finding);
       }
       return false;
     }
-    applyVariable(node, variableId, finding) {
+    async applyVariable(node, variableId, finding) {
       return this.variableResolver.bindVariableToNode(
         node,
         variableId,
@@ -1978,7 +1978,7 @@
       const operations = [...this.undoStack].reverse();
       for (const op of operations) {
         try {
-          const node = figma.getNodeById(op.layerId);
+          const node = await figma.getNodeByIdAsync(op.layerId);
           if (!node) continue;
           const state = op.previousState;
           if (state.fills && "fills" in node) {
@@ -2178,7 +2178,7 @@
       );
       currentScanResult = scanResult;
       const findings = scanResult.findings;
-      enrichWithSuggestions(findings, variableResolver, styleResolver, finalSettings);
+      await enrichWithSuggestions(findings, variableResolver, styleResolver, finalSettings);
       const CHUNK_SIZE = 500;
       for (let i = 0; i < findings.length; i += CHUNK_SIZE) {
         const chunk = findings.slice(i, Math.min(i + CHUNK_SIZE, findings.length));
@@ -2282,9 +2282,9 @@
       payload: result
     });
   }
-  function handleJumpToLayer(layerId) {
+  async function handleJumpToLayer(layerId) {
     try {
-      const node = figma.getNodeById(layerId);
+      const node = await figma.getNodeByIdAsync(layerId);
       if (node && node.type !== "DOCUMENT" && node.type !== "PAGE") {
         const sceneNode = node;
         figma.currentPage.selection = [sceneNode];
@@ -2456,7 +2456,7 @@
       payload: __spreadProps(__spreadValues({}, result), { appliedFindingIds: [findingId] })
     });
   }
-  function enrichWithSuggestions(findings, variableResolver2, styleResolver2, settings) {
+  async function enrichWithSuggestions(findings, variableResolver2, styleResolver2, settings) {
     var _a, _b, _c;
     const colorMap = /* @__PURE__ */ new Map();
     if (settings.matchColorVariables) {
@@ -2567,7 +2567,7 @@
       } else if (f.category === "typography") {
         if (typographyMap.size === 0) continue;
         try {
-          const node = figma.getNodeById(f.layerId);
+          const node = await figma.getNodeByIdAsync(f.layerId);
           if (!node || node.type !== "TEXT") continue;
           const props = extractTypographyProperties(node);
           if (!props.fontFamily) continue;

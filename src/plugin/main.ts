@@ -142,7 +142,7 @@ async function handleStartScan(scope: string, settings?: ScanSettings): Promise<
     const findings = scanResult.findings;
 
     // Enrich findings with suggestions via fast lookup maps
-    enrichWithSuggestions(findings, variableResolver, styleResolver, finalSettings);
+    await enrichWithSuggestions(findings, variableResolver, styleResolver, finalSettings);
 
     // Send findings in chunks to avoid blocking JSVM with one huge message
     const CHUNK_SIZE = 500;
@@ -270,9 +270,9 @@ async function handleApplyAll(): Promise<void> {
   });
 }
 
-function handleJumpToLayer(layerId: string): void {
+async function handleJumpToLayer(layerId: string): Promise<void> {
   try {
-    const node = figma.getNodeById(layerId);
+    const node = await figma.getNodeByIdAsync(layerId);
     if (node && node.type !== "DOCUMENT" && node.type !== "PAGE") {
       const sceneNode = node as SceneNode;
       figma.currentPage.selection = [sceneNode];
@@ -484,7 +484,7 @@ async function handleApplyManual(
   });
 }
 
-function enrichWithSuggestions(
+async function enrichWithSuggestions(
   findings: Finding[],
   variableResolver: VariableResolver,
   styleResolver: StyleResolver,
@@ -604,7 +604,7 @@ function enrichWithSuggestions(
     } else if (f.category === "typography") {
       if (typographyMap.size === 0) continue;
       try {
-        const node = figma.getNodeById(f.layerId) as TextNode | null;
+        const node = await figma.getNodeByIdAsync(f.layerId) as TextNode | null;
         if (!node || node.type !== "TEXT") continue;
         const props = extractTypographyProperties(node);
         if (!props.fontFamily) continue;
